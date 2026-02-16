@@ -31,7 +31,7 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 				'output_schema' => array(
 					'type'       => 'object',
 					'properties' => array(
-						'items' => array(
+						'media' => array(
 							'type'  => 'array',
 							'items' => array(
 								'type'       => 'object',
@@ -116,7 +116,7 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		}
 
 		return array(
-			'items' => $items,
+			'media' => $items,
 			'total' => (int) $query->found_posts,
 		);
 	}
