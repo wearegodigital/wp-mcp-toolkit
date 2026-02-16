@@ -230,6 +230,46 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 					return current_user_can( 'delete_post', $post_id );
 				},
 			),
+			'wpmcp/replace-content' => array(
+				'label'         => __( 'Replace Content', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Finds and replaces text within a post\'s raw content (post_content), working at any block nesting depth. Use this for surgical text edits within nested blocks (e.g. paragraphs inside columns) where update-block-content cannot reach. Provide search_text to find and replace_text to substitute. By default replaces the first occurrence only — set replace_all=true to replace all occurrences. Works on raw block markup, so you can include HTML tags in search/replace values. Call get-post first to see the current content_raw.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-content',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'post_id', 'search_text', 'replace_text' ),
+					'properties' => array(
+						'post_id'      => array( 'type' => 'integer' ),
+						'search_text'  => array(
+							'type'        => 'string',
+							'description' => __( 'The text to find in post content (exact match, case-sensitive).', 'wp-mcp-toolkit' ),
+						),
+						'replace_text' => array(
+							'type'        => 'string',
+							'description' => __( 'The replacement text.', 'wp-mcp-toolkit' ),
+						),
+						'replace_all'  => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'If true, replaces all occurrences. Default: first occurrence only.', 'wp-mcp-toolkit' ),
+						),
+					),
+					'additionalProperties' => false,
+				),
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'success'       => array( 'type' => 'boolean' ),
+						'replacements'  => array( 'type' => 'integer' ),
+					),
+				),
+				'callback'   => 'execute_replace_content',
+				'readonly'   => false,
+				'permission' => static function ( $input ): bool {
+					$input   = is_array( $input ) ? $input : (array) $input;
+					$post_id = absint( $input['post_id'] ?? 0 );
+					return current_user_can( 'edit_post', $post_id );
+				},
+			),
 		);
 	}
 
@@ -448,6 +488,55 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 		return array(
 			'deleted'         => true,
 			'previous_status' => $previous_status,
+		);
+	}
+
+	public function execute_replace_content( $input = array() ): array|\WP_Error {
+		$input        = self::normalize_input( $input );
+		$post_id      = absint( $input['post_id'] ?? 0 );
+		$search_text  = $input['search_text'] ?? '';
+		$replace_text = $input['replace_text'] ?? '';
+		$replace_all  = ! empty( $input['replace_all'] );
+		$post         = get_post( $post_id );
+
+		if ( ! $post ) {
+			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+		}
+
+		if ( empty( $search_text ) ) {
+			return new \WP_Error( 'invalid_input', __( 'search_text cannot be empty.', 'wp-mcp-toolkit' ) );
+		}
+
+		$content = $post->post_content;
+
+		if ( false === strpos( $content, $search_text ) ) {
+			return new \WP_Error( 'not_found', __( 'search_text not found in post content.', 'wp-mcp-toolkit' ) );
+		}
+
+		if ( $replace_all ) {
+			$count   = substr_count( $content, $search_text );
+			$content = str_replace( $search_text, $replace_text, $content );
+		} else {
+			$pos = strpos( $content, $search_text );
+			$content = substr_replace( $content, $replace_text, $pos, strlen( $search_text ) );
+			$count = 1;
+		}
+
+		$result = wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => $content,
+			),
+			true
+		);
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return array(
+			'success'      => true,
+			'replacements' => $count,
 		);
 	}
 
