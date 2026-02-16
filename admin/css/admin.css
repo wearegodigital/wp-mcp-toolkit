@@ -1,0 +1,109 @@
+.wpmcp-admin .nav-tab-wrapper {
+	margin-bottom: 20px;
+}
+
+.wpmcp-tab-content {
+	max-width: 900px;
+}
+
+.wpmcp-config-block {
+	position: relative;
+	margin-bottom: 30px;
+}
+
+.wpmcp-config-block pre {
+	background: #1d2327;
+	color: #c3c4c7;
+	padding: 16px 20px;
+	border-radius: 4px;
+	font-size: 13px;
+	line-height: 1.6;
+	overflow-x: auto;
+	margin: 0 0 8px;
+}
+
+.wpmcp-copy-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+}
+
+.wpmcp-acf-status {
+	padding: 10px 16px;
+	border-radius: 4px;
+	margin-bottom: 20px;
+	font-weight: 500;
+}
+
+.wpmcp-acf-active {
+	background: #d4edda;
+	color: #155724;
+	border: 1px solid #c3e6cb;
+}
+
+.wpmcp-acf-inactive {
+	background: #fff3cd;
+	color: #856404;
+	border: 1px solid #ffeeba;
+}
+
+.wpmcp-acf-warning {
+	font-weight: 400;
+	color: #856404;
+}
+
+.wpmcp-abilities-table {
+	margin-top: 10px;
+}
+
+.wpmcp-abilities-table code {
+	font-size: 12px;
+	background: #f0f0f1;
+	padding: 2px 6px;
+	border-radius: 3px;
+}
+
+.wpmcp-toggle {
+	position: relative;
+	display: inline-block;
+	width: 40px;
+	height: 22px;
+}
+
+.wpmcp-toggle input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.wpmcp-toggle-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	transition: 0.3s;
+	border-radius: 22px;
+}
+
+.wpmcp-toggle-slider::before {
+	position: absolute;
+	content: "";
+	height: 16px;
+	width: 16px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: 0.3s;
+	border-radius: 50%;
+}
+
+.wpmcp-toggle input:checked + .wpmcp-toggle-slider {
+	background-color: #2271b1;
+}
+
+.wpmcp-toggle input:checked + .wpmcp-toggle-slider::before {
+	transform: translateX(18px);
+}
