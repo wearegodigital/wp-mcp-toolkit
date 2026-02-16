@@ -7,27 +7,16 @@
 
 defined( 'ABSPATH' ) || exit();
 
-class WP_MCP_Toolkit_ACF_Block_Abilities {
+class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
-	public function register(): void {
-		$this->register_list_acf_blocks();
-		$this->register_get_block_fields();
-		$this->register_update_block_fields();
-	}
-
-	private function register_list_acf_blocks(): void {
-		wp_register_ability(
-			'wpmcp-acf/list-acf-blocks',
-			array(
-				'label'               => __( 'List ACF Blocks', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Lists all registered ACF blocks with their names, titles, and field configurations.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-acf-fields',
-				'input_schema'        => array(
-					'type'                 => 'object',
-					'properties'           => new \stdClass(),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
+	protected function get_abilities(): array {
+		return array(
+			'wpmcp-acf/list-acf-blocks' => array(
+				'label'         => __( 'List ACF Blocks', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists all registered ACF blocks with their names, titles, and field configurations.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-acf-fields',
+				'input_schema'  => self::empty_input_schema(),
+				'output_schema' => array(
 					'type'  => 'array',
 					'items' => array(
 						'type'       => 'object',
@@ -40,15 +29,78 @@ class WP_MCP_Toolkit_ACF_Block_Abilities {
 						),
 					),
 				),
-				'execute_callback'    => array( $this, 'execute_list_acf_blocks' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'edit_posts' );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
+				'callback'   => 'execute_list_acf_blocks',
+				'permission' => 'edit_posts',
+			),
+			'wpmcp-acf/get-block-fields' => array(
+				'label'         => __( 'Get ACF Block Fields', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets ACF field values from a specific ACF block within a post\'s content.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-acf-fields',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'post_id' ),
+					'properties' => array(
+						'post_id'     => array( 'type' => 'integer' ),
+						'block_index' => array(
+							'type'        => 'integer',
+							'description' => __( 'The index of the ACF block in post content.', 'wp-mcp-toolkit' ),
+						),
+						'block_name'  => array(
+							'type'        => 'string',
+							'description' => __( 'Alternative: find ACF block by name (e.g. acf/hero).', 'wp-mcp-toolkit' ),
+						),
+					),
+					'additionalProperties' => false,
 				),
-			)
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'block_name'  => array( 'type' => 'string' ),
+						'block_index' => array( 'type' => 'integer' ),
+						'fields'      => array( 'type' => 'object' ),
+					),
+				),
+				'callback'   => 'execute_get_block_fields',
+				'permission' => static function ( $input ): bool {
+					$input   = is_array( $input ) ? $input : (array) $input;
+					$post_id = absint( $input['post_id'] ?? 0 );
+					return current_user_can( 'read_post', $post_id );
+				},
+			),
+			'wpmcp-acf/update-block-fields' => array(
+				'label'         => __( 'Update ACF Block Fields', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Updates ACF field values within an ACF block in post content.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-acf-fields',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'post_id', 'fields' ),
+					'properties' => array(
+						'post_id'     => array( 'type' => 'integer' ),
+						'block_index' => array( 'type' => 'integer' ),
+						'block_name'  => array( 'type' => 'string' ),
+						'fields'      => array(
+							'type'        => 'object',
+							'description' => __( 'Object of field_name => new_value pairs.', 'wp-mcp-toolkit' ),
+						),
+					),
+					'additionalProperties' => false,
+				),
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'success'        => array( 'type' => 'boolean' ),
+						'block_name'     => array( 'type' => 'string' ),
+						'updated_fields' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+					),
+				),
+				'callback'   => 'execute_update_block_fields',
+				'readonly'   => false,
+				'permission' => static function ( $input ): bool {
+					$input   = is_array( $input ) ? $input : (array) $input;
+					$post_id = absint( $input['post_id'] ?? 0 );
+					return current_user_can( 'edit_post', $post_id );
+				},
+			),
 		);
 	}
 
@@ -73,53 +125,8 @@ class WP_MCP_Toolkit_ACF_Block_Abilities {
 		return $result;
 	}
 
-	private function register_get_block_fields(): void {
-		wp_register_ability(
-			'wpmcp-acf/get-block-fields',
-			array(
-				'label'               => __( 'Get ACF Block Fields', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Gets ACF field values from a specific ACF block within a post\'s content.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-acf-fields',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id' ),
-					'properties' => array(
-						'post_id'    => array( 'type' => 'integer' ),
-						'block_index' => array(
-							'type'        => 'integer',
-							'description' => __( 'The index of the ACF block in post content.', 'wp-mcp-toolkit' ),
-						),
-						'block_name' => array(
-							'type'        => 'string',
-							'description' => __( 'Alternative: find ACF block by name (e.g. acf/hero).', 'wp-mcp-toolkit' ),
-						),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'       => 'object',
-					'properties' => array(
-						'block_name' => array( 'type' => 'string' ),
-						'block_index' => array( 'type' => 'integer' ),
-						'fields'     => array( 'type' => 'object' ),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_get_block_fields' ),
-				'permission_callback' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'read_post', $post_id );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_get_block_fields( $input = array() ): array|\WP_Error {
-		$input   = is_array( $input ) ? $input : (array) $input;
+		$input   = self::normalize_input( $input );
 		$post_id = absint( $input['post_id'] ?? 0 );
 		$post    = get_post( $post_id );
 
@@ -151,51 +158,8 @@ class WP_MCP_Toolkit_ACF_Block_Abilities {
 		);
 	}
 
-	private function register_update_block_fields(): void {
-		wp_register_ability(
-			'wpmcp-acf/update-block-fields',
-			array(
-				'label'               => __( 'Update ACF Block Fields', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Updates ACF field values within an ACF block in post content.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-acf-fields',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id', 'fields' ),
-					'properties' => array(
-						'post_id'     => array( 'type' => 'integer' ),
-						'block_index' => array( 'type' => 'integer' ),
-						'block_name'  => array( 'type' => 'string' ),
-						'fields'      => array(
-							'type'        => 'object',
-							'description' => __( 'Object of field_name => new_value pairs.', 'wp-mcp-toolkit' ),
-						),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'       => 'object',
-					'properties' => array(
-						'success'        => array( 'type' => 'boolean' ),
-						'block_name'     => array( 'type' => 'string' ),
-						'updated_fields' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_update_block_fields' ),
-				'permission_callback' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_update_block_fields( $input = array() ): array|\WP_Error {
-		$input       = is_array( $input ) ? $input : (array) $input;
+		$input       = self::normalize_input( $input );
 		$post_id     = absint( $input['post_id'] ?? 0 );
 		$new_fields  = (array) ( $input['fields'] ?? array() );
 		$post        = get_post( $post_id );
@@ -218,7 +182,6 @@ class WP_MCP_Toolkit_ACF_Block_Abilities {
 		$ref = &$blocks;
 		foreach ( $block_path as $i => $segment ) {
 			if ( $i === count( $block_path ) - 1 ) {
-				// Last segment is the block index.
 				if ( ! isset( $ref[ $segment ]['attrs']['data'] ) ) {
 					$ref[ $segment ]['attrs']['data'] = array();
 				}
@@ -234,12 +197,10 @@ class WP_MCP_Toolkit_ACF_Block_Abilities {
 			}
 		}
 
-		// Serialize and save.
-		$new_content = serialize_blocks( $blocks );
 		$result = wp_update_post(
 			array(
 				'ID'           => $post_id,
-				'post_content' => $new_content,
+				'post_content' => serialize_blocks( $blocks ),
 			),
 			true
 		);
@@ -257,8 +218,6 @@ class WP_MCP_Toolkit_ACF_Block_Abilities {
 
 	/**
 	 * Finds an ACF block recursively in parsed blocks by index or name.
-	 *
-	 * Returns block data plus a 'path' array for nested block updates.
 	 */
 	private function find_acf_block( array $blocks, array $input ): ?array {
 		$target_index = isset( $input['block_index'] ) ? absint( $input['block_index'] ) : null;
@@ -293,7 +252,6 @@ class WP_MCP_Toolkit_ACF_Block_Abilities {
 				$counter['idx']++;
 			}
 
-			// Recurse into inner blocks.
 			if ( ! empty( $block['innerBlocks'] ) ) {
 				$inner_path = array_merge( $path, array( $real_idx, 'innerBlocks' ) );
 				$found = $this->search_acf_blocks_recursive( $block['innerBlocks'], $target_index, $target_name, $counter, $inner_path );

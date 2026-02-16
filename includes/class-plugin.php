@@ -49,40 +49,32 @@ final class WP_MCP_Toolkit {
 			),
 		);
 
-		foreach ( $categories as $slug => $args ) {
-			wp_register_ability_category( $slug, $args );
+		if ( class_exists( 'ACF' ) ) {
+			$categories['wpmcp-acf-fields'] = array(
+				'label'       => __( 'ACF Fields', 'wp-mcp-toolkit' ),
+				'description' => __( 'Abilities for managing Advanced Custom Fields data.', 'wp-mcp-toolkit' ),
+			);
 		}
 
-		// ACF categories if available.
-		if ( class_exists( 'ACF' ) ) {
-			wp_register_ability_category(
-				'wpmcp-acf-fields',
-				array(
-					'label'       => __( 'ACF Fields', 'wp-mcp-toolkit' ),
-					'description' => __( 'Abilities for managing Advanced Custom Fields data.', 'wp-mcp-toolkit' ),
-				)
-			);
+		foreach ( $categories as $slug => $args ) {
+			wp_register_ability_category( $slug, $args );
 		}
 	}
 
 	public function register_abilities(): void {
 		require_once __DIR__ . '/class-ability-registrar.php';
-		$registrar = new WP_MCP_Toolkit_Ability_Registrar();
-		$registrar->register();
+		( new WP_MCP_Toolkit_Ability_Registrar() )->register();
 
 		// ACF module.
-		if ( class_exists( 'ACF' ) && file_exists( __DIR__ . '/modules/acf/class-acf-module.php' ) ) {
+		if ( class_exists( 'ACF' ) ) {
 			require_once __DIR__ . '/modules/acf/class-acf-module.php';
 			WP_MCP_Toolkit_ACF_Module::init();
 		}
 	}
 
 	public function register_admin_page(): void {
-		if ( file_exists( __DIR__ . '/../admin/class-admin-page.php' ) ) {
-			require_once __DIR__ . '/../admin/class-admin-page.php';
-			$admin = new WP_MCP_Toolkit_Admin_Page();
-			$admin->register();
-		}
+		require_once __DIR__ . '/../admin/class-admin-page.php';
+		( new WP_MCP_Toolkit_Admin_Page() )->register();
 	}
 }
 

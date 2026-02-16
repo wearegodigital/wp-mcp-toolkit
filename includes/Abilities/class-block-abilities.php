@@ -9,25 +9,15 @@
 
 defined( 'ABSPATH' ) || exit();
 
-class WP_MCP_Toolkit_Block_Abilities {
+class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
-	public function register( array $disabled = array() ): void {
-		if ( ! in_array( 'wpmcp/parse-blocks', $disabled, true ) ) {
-			$this->register_parse_blocks();
-		}
-		if ( ! in_array( 'wpmcp/update-block-content', $disabled, true ) ) {
-			$this->register_update_block_content();
-		}
-	}
-
-	private function register_parse_blocks(): void {
-		wp_register_ability(
-			'wpmcp/parse-blocks',
-			array(
-				'label'               => __( 'Parse Blocks', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Parses a post\'s content into a structured list of blocks with names, attributes, and inner content.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-blocks',
-				'input_schema'        => array(
+	protected function get_abilities(): array {
+		return array(
+			'wpmcp/parse-blocks' => array(
+				'label'         => __( 'Parse Blocks', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Parses a post\'s content into a structured list of blocks with names, attributes, and inner content.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-blocks',
+				'input_schema'  => array(
 					'type'       => 'object',
 					'required'   => array( 'post_id' ),
 					'properties' => array(
@@ -35,7 +25,7 @@ class WP_MCP_Toolkit_Block_Abilities {
 					),
 					'additionalProperties' => false,
 				),
-				'output_schema'       => array(
+				'output_schema' => array(
 					'type'  => 'array',
 					'items' => array(
 						'type'       => 'object',
@@ -48,22 +38,58 @@ class WP_MCP_Toolkit_Block_Abilities {
 						),
 					),
 				),
-				'execute_callback'    => array( $this, 'execute_parse_blocks' ),
-				'permission_callback' => static function ( $input ): bool {
+				'callback'   => 'execute_parse_blocks',
+				'permission' => static function ( $input ): bool {
 					$input   = is_array( $input ) ? $input : (array) $input;
 					$post_id = absint( $input['post_id'] ?? 0 );
 					return current_user_can( 'read_post', $post_id );
 				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
+			),
+			'wpmcp/update-block-content' => array(
+				'label'         => __( 'Update Block Content', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Updates the HTML content of a specific block within a post, identified by block index or by searching for text. Preserves block markers.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-blocks',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'post_id', 'new_content' ),
+					'properties' => array(
+						'post_id'     => array( 'type' => 'integer' ),
+						'block_index' => array(
+							'type'        => 'integer',
+							'description' => __( 'The index of the block to update (from parse-blocks output).', 'wp-mcp-toolkit' ),
+						),
+						'search_text' => array(
+							'type'        => 'string',
+							'description' => __( 'Alternative: find the block containing this text.', 'wp-mcp-toolkit' ),
+						),
+						'new_content' => array(
+							'type'        => 'string',
+							'description' => __( 'The new innerHTML for the block.', 'wp-mcp-toolkit' ),
+						),
+					),
+					'additionalProperties' => false,
 				),
-			)
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'success'     => array( 'type' => 'boolean' ),
+						'block_name'  => array( 'type' => 'string' ),
+						'block_index' => array( 'type' => 'integer' ),
+					),
+				),
+				'callback'   => 'execute_update_block_content',
+				'readonly'   => false,
+				'permission' => static function ( $input ): bool {
+					$input   = is_array( $input ) ? $input : (array) $input;
+					$post_id = absint( $input['post_id'] ?? 0 );
+					return current_user_can( 'edit_post', $post_id );
+				},
+			),
 		);
 	}
 
 	public function execute_parse_blocks( $input = array() ): array|\WP_Error {
-		$input   = is_array( $input ) ? $input : (array) $input;
+		$input   = self::normalize_input( $input );
 		$post_id = absint( $input['post_id'] ?? 0 );
 		$post    = get_post( $post_id );
 
@@ -82,7 +108,6 @@ class WP_MCP_Toolkit_Block_Abilities {
 		$result = array();
 
 		foreach ( $blocks as $block ) {
-			// Skip empty/whitespace-only blocks.
 			if ( empty( $block['blockName'] ) && empty( trim( $block['innerHTML'] ?? '' ) ) ) {
 				continue;
 			}
@@ -105,57 +130,8 @@ class WP_MCP_Toolkit_Block_Abilities {
 		return $result;
 	}
 
-	private function register_update_block_content(): void {
-		wp_register_ability(
-			'wpmcp/update-block-content',
-			array(
-				'label'               => __( 'Update Block Content', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Updates the HTML content of a specific block within a post, identified by block index or by searching for text. Preserves block markers.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-blocks',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id', 'new_content' ),
-					'properties' => array(
-						'post_id'     => array( 'type' => 'integer' ),
-						'block_index' => array(
-							'type'        => 'integer',
-							'description' => __( 'The index of the block to update (from parse-blocks output).', 'wp-mcp-toolkit' ),
-						),
-						'search_text' => array(
-							'type'        => 'string',
-							'description' => __( 'Alternative: find the block containing this text.', 'wp-mcp-toolkit' ),
-						),
-						'new_content' => array(
-							'type'        => 'string',
-							'description' => __( 'The new innerHTML for the block.', 'wp-mcp-toolkit' ),
-						),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'       => 'object',
-					'properties' => array(
-						'success'     => array( 'type' => 'boolean' ),
-						'block_name'  => array( 'type' => 'string' ),
-						'block_index' => array( 'type' => 'integer' ),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_update_block_content' ),
-				'permission_callback' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_update_block_content( $input = array() ): array|\WP_Error {
-		$input       = is_array( $input ) ? $input : (array) $input;
+		$input       = self::normalize_input( $input );
 		$post_id     = absint( $input['post_id'] ?? 0 );
 		$new_content = $input['new_content'] ?? '';
 		$post        = get_post( $post_id );
@@ -164,46 +140,15 @@ class WP_MCP_Toolkit_Block_Abilities {
 			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
-		$blocks = parse_blocks( $post->post_content );
-
-		// Find the target block.
-		$target_index = null;
-		$block_name   = '';
-
-		if ( isset( $input['block_index'] ) ) {
-			$target_index = absint( $input['block_index'] );
-		} elseif ( ! empty( $input['search_text'] ) ) {
-			$search = $input['search_text'];
-			$idx    = 0;
-			foreach ( $blocks as $block ) {
-				if ( empty( $block['blockName'] ) && empty( trim( $block['innerHTML'] ?? '' ) ) ) {
-					continue;
-				}
-				if ( false !== strpos( $block['innerHTML'] ?? '', $search ) ) {
-					$target_index = $idx;
-					break;
-				}
-				$idx++;
-			}
-		}
+		$blocks       = parse_blocks( $post->post_content );
+		$target_index = $this->resolve_target_index( $blocks, $input );
 
 		if ( null === $target_index ) {
 			return new \WP_Error( 'block_not_found', __( 'Could not find the target block.', 'wp-mcp-toolkit' ) );
 		}
 
 		// Map flat index back to actual blocks array index (skipping empty blocks).
-		$flat_idx    = 0;
-		$real_idx    = null;
-		foreach ( $blocks as $i => $block ) {
-			if ( empty( $block['blockName'] ) && empty( trim( $block['innerHTML'] ?? '' ) ) ) {
-				continue;
-			}
-			if ( $flat_idx === $target_index ) {
-				$real_idx = $i;
-				break;
-			}
-			$flat_idx++;
-		}
+		$real_idx = $this->flat_to_real_index( $blocks, $target_index );
 
 		if ( null === $real_idx || ! isset( $blocks[ $real_idx ] ) ) {
 			return new \WP_Error( 'block_not_found', __( 'Block index out of range.', 'wp-mcp-toolkit' ) );
@@ -214,7 +159,6 @@ class WP_MCP_Toolkit_Block_Abilities {
 		// Update innerHTML and innerContent.
 		$blocks[ $real_idx ]['innerHTML'] = $new_content;
 		if ( ! empty( $blocks[ $real_idx ]['innerContent'] ) ) {
-			// Replace the first non-null entry in innerContent.
 			foreach ( $blocks[ $real_idx ]['innerContent'] as $ci => $chunk ) {
 				if ( null !== $chunk ) {
 					$blocks[ $real_idx ]['innerContent'][ $ci ] = $new_content;
@@ -225,12 +169,10 @@ class WP_MCP_Toolkit_Block_Abilities {
 			$blocks[ $real_idx ]['innerContent'] = array( $new_content );
 		}
 
-		// Serialize and save.
-		$new_post_content = serialize_blocks( $blocks );
 		$result = wp_update_post(
 			array(
 				'ID'           => $post_id,
-				'post_content' => $new_post_content,
+				'post_content' => serialize_blocks( $blocks ),
 			),
 			true
 		);
@@ -244,5 +186,49 @@ class WP_MCP_Toolkit_Block_Abilities {
 			'block_name'  => $block_name,
 			'block_index' => $target_index,
 		);
+	}
+
+	/**
+	 * Resolves a target flat-index from either block_index or search_text input.
+	 */
+	private function resolve_target_index( array $blocks, array $input ): ?int {
+		if ( isset( $input['block_index'] ) ) {
+			return absint( $input['block_index'] );
+		}
+
+		if ( empty( $input['search_text'] ) ) {
+			return null;
+		}
+
+		$search = $input['search_text'];
+		$idx    = 0;
+		foreach ( $blocks as $block ) {
+			if ( empty( $block['blockName'] ) && empty( trim( $block['innerHTML'] ?? '' ) ) ) {
+				continue;
+			}
+			if ( false !== strpos( $block['innerHTML'] ?? '', $search ) ) {
+				return $idx;
+			}
+			$idx++;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Maps a flat index (skipping empty blocks) to the real array index.
+	 */
+	private function flat_to_real_index( array $blocks, int $target ): ?int {
+		$flat_idx = 0;
+		foreach ( $blocks as $i => $block ) {
+			if ( empty( $block['blockName'] ) && empty( trim( $block['innerHTML'] ?? '' ) ) ) {
+				continue;
+			}
+			if ( $flat_idx === $target ) {
+				return $i;
+			}
+			$flat_idx++;
+		}
+		return null;
 	}
 }

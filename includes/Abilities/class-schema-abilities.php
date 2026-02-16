@@ -7,30 +7,16 @@
 
 defined( 'ABSPATH' ) || exit();
 
-class WP_MCP_Toolkit_Schema_Abilities {
+class WP_MCP_Toolkit_Schema_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
-	public function register( array $disabled = array() ): void {
-		if ( ! in_array( 'wpmcp/get-site-structure', $disabled, true ) ) {
-			$this->register_get_site_structure();
-		}
-		if ( ! in_array( 'wpmcp/get-page-tree', $disabled, true ) ) {
-			$this->register_get_page_tree();
-		}
-	}
-
-	private function register_get_site_structure(): void {
-		wp_register_ability(
-			'wpmcp/get-site-structure',
-			array(
-				'label'               => __( 'Get Site Structure', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Returns a comprehensive overview of the site: post types, taxonomies, active plugins, theme info, and content counts.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-schema',
-				'input_schema'        => array(
-					'type'                 => 'object',
-					'properties'           => new \stdClass(),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
+	protected function get_abilities(): array {
+		return array(
+			'wpmcp/get-site-structure' => array(
+				'label'         => __( 'Get Site Structure', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Returns a comprehensive overview of the site: post types, taxonomies, active plugins, theme info, and content counts.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-schema',
+				'input_schema'  => self::empty_input_schema(),
+				'output_schema' => array(
 					'type'       => 'object',
 					'properties' => array(
 						'post_types' => array(
@@ -79,19 +65,40 @@ class WP_MCP_Toolkit_Schema_Abilities {
 						),
 					),
 				),
-				'execute_callback'    => array( $this, 'execute_get_site_structure' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'read' );
-				},
-				'meta'                => array(
-					'annotations'  => array(
-						'readonly'    => true,
-						'destructive' => false,
-						'idempotent'  => true,
+				'callback'   => 'execute_get_site_structure',
+				'permission' => 'read',
+			),
+			'wpmcp/get-page-tree' => array(
+				'label'         => __( 'Get Page Tree', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Returns a hierarchical tree of pages with IDs, titles, slugs, URLs, and parent relationships.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-schema',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_type' => array(
+							'type'    => 'string',
+							'default' => 'page',
+						),
 					),
-					'show_in_rest' => true,
+					'additionalProperties' => false,
 				),
-			)
+				'output_schema' => array(
+					'type'  => 'array',
+					'items' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'id'        => array( 'type' => 'integer' ),
+							'title'     => array( 'type' => 'string' ),
+							'slug'      => array( 'type' => 'string' ),
+							'url'       => array( 'type' => 'string' ),
+							'parent_id' => array( 'type' => 'integer' ),
+							'children'  => array( 'type' => 'array' ),
+						),
+					),
+				),
+				'callback'   => 'execute_get_page_tree',
+				'permission' => 'read',
+			),
 		);
 	}
 
@@ -149,55 +156,8 @@ class WP_MCP_Toolkit_Schema_Abilities {
 		);
 	}
 
-	private function register_get_page_tree(): void {
-		wp_register_ability(
-			'wpmcp/get-page-tree',
-			array(
-				'label'               => __( 'Get Page Tree', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Returns a hierarchical tree of pages with IDs, titles, slugs, URLs, and parent relationships.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-schema',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'properties' => array(
-						'post_type' => array(
-							'type'    => 'string',
-							'default' => 'page',
-						),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'  => 'array',
-					'items' => array(
-						'type'       => 'object',
-						'properties' => array(
-							'id'        => array( 'type' => 'integer' ),
-							'title'     => array( 'type' => 'string' ),
-							'slug'      => array( 'type' => 'string' ),
-							'url'       => array( 'type' => 'string' ),
-							'parent_id' => array( 'type' => 'integer' ),
-							'children'  => array( 'type' => 'array' ),
-						),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_get_page_tree' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'read' );
-				},
-				'meta'                => array(
-					'annotations'  => array(
-						'readonly'    => true,
-						'destructive' => false,
-						'idempotent'  => true,
-					),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_get_page_tree( $input = array() ): array {
-		$input     = is_array( $input ) ? $input : array();
+		$input     = self::normalize_input( $input );
 		$post_type = ! empty( $input['post_type'] ) ? sanitize_key( $input['post_type'] ) : 'page';
 
 		$pages = get_pages( array(

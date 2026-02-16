@@ -45,13 +45,31 @@ class WP_MCP_Toolkit_Admin_Page {
 	}
 
 	public function register_settings(): void {
+		// The form submits enabled abilities; we compute and store disabled ones.
 		register_setting( 'wpmcp_settings', 'wpmcp_disabled_abilities', array(
 			'type'              => 'array',
-			'sanitize_callback' => function ( $value ) {
-				return is_array( $value ) ? array_map( 'sanitize_text_field', $value ) : array();
-			},
+			'sanitize_callback' => array( $this, 'sanitize_abilities_setting' ),
 			'default'           => array(),
 		) );
+	}
+
+	/**
+	 * Converts the submitted enabled-abilities list into a disabled-abilities list.
+	 *
+	 * The form posts wpmcp_enabled_abilities[] (checked toggles) and
+	 * wpmcp_all_abilities (comma-separated list of every slug). Disabled
+	 * abilities = all - enabled. This approach means "checked = enabled"
+	 * in the UI, which is the intuitive behavior.
+	 */
+	public function sanitize_abilities_setting( $value ): array {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified by settings_fields().
+		$all_raw     = isset( $_POST['wpmcp_all_abilities'] ) ? sanitize_text_field( wp_unslash( $_POST['wpmcp_all_abilities'] ) ) : '';
+		$all         = array_filter( explode( ',', $all_raw ) );
+		$enabled_raw = isset( $_POST['wpmcp_enabled_abilities'] ) && is_array( $_POST['wpmcp_enabled_abilities'] )
+			? array_map( 'sanitize_text_field', wp_unslash( $_POST['wpmcp_enabled_abilities'] ) )
+			: array();
+
+		return array_values( array_diff( $all, $enabled_raw ) );
 	}
 
 	public function render(): void {

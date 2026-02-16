@@ -7,33 +7,16 @@
 
 defined( 'ABSPATH' ) || exit();
 
-class WP_MCP_Toolkit_Taxonomy_Abilities {
+class WP_MCP_Toolkit_Taxonomy_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
-	public function register( array $disabled = array() ): void {
-		if ( ! in_array( 'wpmcp/list-taxonomies', $disabled, true ) ) {
-			$this->register_list_taxonomies();
-		}
-		if ( ! in_array( 'wpmcp/list-terms', $disabled, true ) ) {
-			$this->register_list_terms();
-		}
-		if ( ! in_array( 'wpmcp/create-term', $disabled, true ) ) {
-			$this->register_create_term();
-		}
-	}
-
-	private function register_list_taxonomies(): void {
-		wp_register_ability(
-			'wpmcp/list-taxonomies',
-			array(
-				'label'               => __( 'List Taxonomies', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Lists all registered public taxonomies with their associated post types.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-taxonomy',
-				'input_schema'        => array(
-					'type'                 => 'object',
-					'properties'           => new \stdClass(),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
+	protected function get_abilities(): array {
+		return array(
+			'wpmcp/list-taxonomies' => array(
+				'label'         => __( 'List Taxonomies', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists all registered public taxonomies with their associated post types.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-taxonomy',
+				'input_schema'  => self::empty_input_schema(),
+				'output_schema' => array(
 					'type'  => 'array',
 					'items' => array(
 						'type'       => 'object',
@@ -46,15 +29,75 @@ class WP_MCP_Toolkit_Taxonomy_Abilities {
 						),
 					),
 				),
-				'execute_callback'    => array( $this, 'execute_list_taxonomies' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'read' );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
+				'callback'   => 'execute_list_taxonomies',
+				'permission' => 'read',
+			),
+			'wpmcp/list-terms' => array(
+				'label'         => __( 'List Terms', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists terms in a taxonomy with count, parent, and description.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-taxonomy',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'taxonomy' ),
+					'properties' => array(
+						'taxonomy'   => array( 'type' => 'string' ),
+						'hide_empty' => array( 'type' => 'boolean', 'default' => false ),
+						'search'     => array( 'type' => 'string' ),
+						'per_page'   => array( 'type' => 'integer', 'default' => 100 ),
+					),
+					'additionalProperties' => false,
 				),
-			)
+				'output_schema' => array(
+					'type'  => 'array',
+					'items' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'id'          => array( 'type' => 'integer' ),
+							'name'        => array( 'type' => 'string' ),
+							'slug'        => array( 'type' => 'string' ),
+							'description' => array( 'type' => 'string' ),
+							'parent_id'   => array( 'type' => 'integer' ),
+							'count'       => array( 'type' => 'integer' ),
+						),
+					),
+				),
+				'callback'   => 'execute_list_terms',
+				'permission' => 'read',
+			),
+			'wpmcp/create-term' => array(
+				'label'         => __( 'Create Term', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Creates a new term in a taxonomy.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-taxonomy',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'taxonomy', 'name' ),
+					'properties' => array(
+						'taxonomy'    => array( 'type' => 'string' ),
+						'name'        => array( 'type' => 'string' ),
+						'slug'        => array( 'type' => 'string' ),
+						'description' => array( 'type' => 'string', 'default' => '' ),
+						'parent'      => array( 'type' => 'integer', 'default' => 0 ),
+					),
+					'additionalProperties' => false,
+				),
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'term_id' => array( 'type' => 'integer' ),
+						'name'    => array( 'type' => 'string' ),
+						'slug'    => array( 'type' => 'string' ),
+					),
+				),
+				'callback'   => 'execute_create_term',
+				'readonly'   => false,
+				'idempotent' => false,
+				'permission' => static function ( $input ): bool {
+					$input    = is_array( $input ) ? $input : (array) $input;
+					$taxonomy = sanitize_key( $input['taxonomy'] ?? '' );
+					$tax_obj  = get_taxonomy( $taxonomy );
+					return $tax_obj && current_user_can( $tax_obj->cap->manage_terms );
+				},
+			),
 		);
 	}
 
@@ -75,52 +118,8 @@ class WP_MCP_Toolkit_Taxonomy_Abilities {
 		return $result;
 	}
 
-	private function register_list_terms(): void {
-		wp_register_ability(
-			'wpmcp/list-terms',
-			array(
-				'label'               => __( 'List Terms', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Lists terms in a taxonomy with count, parent, and description.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-taxonomy',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'taxonomy' ),
-					'properties' => array(
-						'taxonomy'   => array( 'type' => 'string' ),
-						'hide_empty' => array( 'type' => 'boolean', 'default' => false ),
-						'search'     => array( 'type' => 'string' ),
-						'per_page'   => array( 'type' => 'integer', 'default' => 100 ),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'  => 'array',
-					'items' => array(
-						'type'       => 'object',
-						'properties' => array(
-							'id'          => array( 'type' => 'integer' ),
-							'name'        => array( 'type' => 'string' ),
-							'slug'        => array( 'type' => 'string' ),
-							'description' => array( 'type' => 'string' ),
-							'parent_id'   => array( 'type' => 'integer' ),
-							'count'       => array( 'type' => 'integer' ),
-						),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_list_terms' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'read' );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_list_terms( $input = array() ): array|\WP_Error {
-		$input    = is_array( $input ) ? $input : (array) $input;
+		$input    = self::normalize_input( $input );
 		$taxonomy = sanitize_key( $input['taxonomy'] ?? '' );
 
 		if ( ! taxonomy_exists( $taxonomy ) ) {
@@ -158,50 +157,8 @@ class WP_MCP_Toolkit_Taxonomy_Abilities {
 		return $result;
 	}
 
-	private function register_create_term(): void {
-		wp_register_ability(
-			'wpmcp/create-term',
-			array(
-				'label'               => __( 'Create Term', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Creates a new term in a taxonomy.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-taxonomy',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'taxonomy', 'name' ),
-					'properties' => array(
-						'taxonomy'    => array( 'type' => 'string' ),
-						'name'        => array( 'type' => 'string' ),
-						'slug'        => array( 'type' => 'string' ),
-						'description' => array( 'type' => 'string', 'default' => '' ),
-						'parent'      => array( 'type' => 'integer', 'default' => 0 ),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'       => 'object',
-					'properties' => array(
-						'term_id' => array( 'type' => 'integer' ),
-						'name'    => array( 'type' => 'string' ),
-						'slug'    => array( 'type' => 'string' ),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_create_term' ),
-				'permission_callback' => static function ( $input ): bool {
-					$input    = is_array( $input ) ? $input : (array) $input;
-					$taxonomy = sanitize_key( $input['taxonomy'] ?? '' );
-					$tax_obj  = get_taxonomy( $taxonomy );
-					return $tax_obj && current_user_can( $tax_obj->cap->manage_terms );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => false ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_create_term( $input = array() ): array|\WP_Error {
-		$input    = is_array( $input ) ? $input : (array) $input;
+		$input    = self::normalize_input( $input );
 		$taxonomy = sanitize_key( $input['taxonomy'] ?? '' );
 		$name     = sanitize_text_field( $input['name'] ?? '' );
 

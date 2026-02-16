@@ -14,6 +14,15 @@ $abilities  = wp_get_abilities();
 // ACF status.
 $acf_active  = class_exists( 'ACF' );
 $acf_version = defined( 'ACF_VERSION' ) ? ACF_VERSION : '';
+
+// Collect our ability slugs for the form.
+$wpmcp_abilities = array();
+foreach ( $abilities as $ability ) {
+	$name = $ability->get_name();
+	if ( 0 === strpos( $name, 'wpmcp' ) ) {
+		$wpmcp_abilities[] = $name;
+	}
+}
 ?>
 <div class="wrap wpmcp-admin">
 	<h1><?php esc_html_e( 'WP MCP Toolkit', 'wp-mcp-toolkit' ); ?></h1>
@@ -73,6 +82,12 @@ $acf_version = defined( 'ACF_VERSION' ) ? ACF_VERSION : '';
 			<form method="post" action="options.php">
 				<?php settings_fields( 'wpmcp_settings' ); ?>
 
+				<?php
+				// Hidden field lists all known ability slugs so the sanitize
+				// callback can compute disabled = all - enabled.
+				?>
+				<input type="hidden" name="wpmcp_all_abilities" value="<?php echo esc_attr( implode( ',', $wpmcp_abilities ) ); ?>">
+
 				<table class="widefat wpmcp-abilities-table">
 					<thead>
 						<tr>
@@ -84,11 +99,10 @@ $acf_version = defined( 'ACF_VERSION' ) ? ACF_VERSION : '';
 					<tbody>
 						<?php foreach ( $abilities as $ability ) :
 							$name = $ability->get_name();
-							// Only show wpmcp abilities.
 							if ( 0 !== strpos( $name, 'wpmcp' ) ) {
 								continue;
 							}
-							$is_disabled = in_array( $name, $disabled, true );
+							$is_enabled = ! in_array( $name, $disabled, true );
 						?>
 							<tr>
 								<td><code><?php echo esc_html( $name ); ?></code></td>
@@ -96,9 +110,9 @@ $acf_version = defined( 'ACF_VERSION' ) ? ACF_VERSION : '';
 								<td>
 									<label class="wpmcp-toggle">
 										<input type="checkbox"
-											name="wpmcp_disabled_abilities[]"
+											name="wpmcp_enabled_abilities[]"
 											value="<?php echo esc_attr( $name ); ?>"
-											<?php checked( ! $is_disabled ); ?>
+											<?php checked( $is_enabled ); ?>
 										>
 										<span class="wpmcp-toggle-slider"></span>
 									</label>

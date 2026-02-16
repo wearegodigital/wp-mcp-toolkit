@@ -7,28 +7,16 @@
 
 defined( 'ABSPATH' ) || exit();
 
-class WP_MCP_Toolkit_ACF_Field_Abilities {
+class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
-	public function register(): void {
-		$this->register_list_field_groups();
-		$this->register_get_field_group();
-		$this->register_get_post_fields();
-		$this->register_update_post_fields();
-	}
-
-	private function register_list_field_groups(): void {
-		wp_register_ability(
-			'wpmcp-acf/list-field-groups',
-			array(
-				'label'               => __( 'List ACF Field Groups', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Lists all ACF field groups with their titles, keys, and location rules.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-acf-fields',
-				'input_schema'        => array(
-					'type'                 => 'object',
-					'properties'           => new \stdClass(),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
+	protected function get_abilities(): array {
+		return array(
+			'wpmcp-acf/list-field-groups' => array(
+				'label'         => __( 'List ACF Field Groups', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists all ACF field groups with their titles, keys, and location rules.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-acf-fields',
+				'input_schema'  => self::empty_input_schema(),
+				'output_schema' => array(
 					'type'  => 'array',
 					'items' => array(
 						'type'       => 'object',
@@ -41,44 +29,14 @@ class WP_MCP_Toolkit_ACF_Field_Abilities {
 						),
 					),
 				),
-				'execute_callback'    => array( $this, 'execute_list_field_groups' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'manage_options' );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
-	public function execute_list_field_groups( $input = array() ): array {
-		$groups = acf_get_field_groups();
-		$result = array();
-
-		foreach ( $groups as $group ) {
-			$fields = acf_get_fields( $group['key'] );
-			$result[] = array(
-				'key'            => $group['key'],
-				'title'          => $group['title'],
-				'active'         => (bool) $group['active'],
-				'fields_count'   => is_array( $fields ) ? count( $fields ) : 0,
-				'location_rules' => $group['location'] ?? array(),
-			);
-		}
-
-		return $result;
-	}
-
-	private function register_get_field_group(): void {
-		wp_register_ability(
-			'wpmcp-acf/get-field-group',
-			array(
-				'label'               => __( 'Get ACF Field Group', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Gets a field group\'s full configuration including all fields with types, choices, and defaults.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-acf-fields',
-				'input_schema'        => array(
+				'callback'   => 'execute_list_field_groups',
+				'permission' => 'manage_options',
+			),
+			'wpmcp-acf/get-field-group' => array(
+				'label'         => __( 'Get ACF Field Group', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets a field group\'s full configuration including all fields with types, choices, and defaults.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-acf-fields',
+				'input_schema'  => array(
 					'type'       => 'object',
 					'required'   => array( 'group_key' ),
 					'properties' => array(
@@ -89,7 +47,7 @@ class WP_MCP_Toolkit_ACF_Field_Abilities {
 					),
 					'additionalProperties' => false,
 				),
-				'output_schema'       => array(
+				'output_schema' => array(
 					'type'       => 'object',
 					'properties' => array(
 						'key'    => array( 'type' => 'string' ),
@@ -112,20 +70,85 @@ class WP_MCP_Toolkit_ACF_Field_Abilities {
 						),
 					),
 				),
-				'execute_callback'    => array( $this, 'execute_get_field_group' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'manage_options' );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
+				'callback'   => 'execute_get_field_group',
+				'permission' => 'manage_options',
+			),
+			'wpmcp-acf/get-post-fields' => array(
+				'label'         => __( 'Get ACF Post Fields', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets all ACF field values for a specific post, including repeaters and groups.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-acf-fields',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'post_id' ),
+					'properties' => array(
+						'post_id' => array( 'type' => 'integer' ),
+					),
+					'additionalProperties' => false,
 				),
-			)
+				'output_schema' => array(
+					'type' => 'object',
+				),
+				'callback'   => 'execute_get_post_fields',
+				'permission' => static function ( $input ): bool {
+					$input   = is_array( $input ) ? $input : (array) $input;
+					$post_id = absint( $input['post_id'] ?? 0 );
+					return current_user_can( 'read_post', $post_id );
+				},
+			),
+			'wpmcp-acf/update-post-fields' => array(
+				'label'         => __( 'Update ACF Post Fields', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Updates ACF field values on a post. Handles text, repeaters, groups, and other field types.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-acf-fields',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'post_id', 'fields' ),
+					'properties' => array(
+						'post_id' => array( 'type' => 'integer' ),
+						'fields'  => array(
+							'type'        => 'object',
+							'description' => __( 'Object of field_name => value pairs.', 'wp-mcp-toolkit' ),
+						),
+					),
+					'additionalProperties' => false,
+				),
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'updated_fields' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'errors'         => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+					),
+				),
+				'callback'   => 'execute_update_post_fields',
+				'readonly'   => false,
+				'permission' => static function ( $input ): bool {
+					$input   = is_array( $input ) ? $input : (array) $input;
+					$post_id = absint( $input['post_id'] ?? 0 );
+					return current_user_can( 'edit_post', $post_id );
+				},
+			),
 		);
 	}
 
+	public function execute_list_field_groups( $input = array() ): array {
+		$groups = acf_get_field_groups();
+		$result = array();
+
+		foreach ( $groups as $group ) {
+			$fields = acf_get_fields( $group['key'] );
+			$result[] = array(
+				'key'            => $group['key'],
+				'title'          => $group['title'],
+				'active'         => (bool) $group['active'],
+				'fields_count'   => is_array( $fields ) ? count( $fields ) : 0,
+				'location_rules' => $group['location'] ?? array(),
+			);
+		}
+
+		return $result;
+	}
+
 	public function execute_get_field_group( $input = array() ): array|\WP_Error {
-		$input     = is_array( $input ) ? $input : (array) $input;
+		$input     = self::normalize_input( $input );
 		$group_key = sanitize_text_field( $input['group_key'] ?? '' );
 
 		$group = acf_get_field_group( $group_key );
@@ -159,12 +182,10 @@ class WP_MCP_Toolkit_ACF_Field_Abilities {
 				$item['choices'] = $field['choices'];
 			}
 
-			// Recursively handle sub_fields for repeaters and groups.
 			if ( ! empty( $field['sub_fields'] ) ) {
 				$item['sub_fields'] = $this->format_fields( $field['sub_fields'] );
 			}
 
-			// Handle layouts for flexible content.
 			if ( ! empty( $field['layouts'] ) ) {
 				$layouts = array();
 				foreach ( $field['layouts'] as $layout ) {
@@ -183,40 +204,8 @@ class WP_MCP_Toolkit_ACF_Field_Abilities {
 		return $result;
 	}
 
-	private function register_get_post_fields(): void {
-		wp_register_ability(
-			'wpmcp-acf/get-post-fields',
-			array(
-				'label'               => __( 'Get ACF Post Fields', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Gets all ACF field values for a specific post, including repeaters and groups.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-acf-fields',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id' ),
-					'properties' => array(
-						'post_id' => array( 'type' => 'integer' ),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type' => 'object',
-				),
-				'execute_callback'    => array( $this, 'execute_get_post_fields' ),
-				'permission_callback' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'read_post', $post_id );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_get_post_fields( $input = array() ): array|\WP_Error {
-		$input   = is_array( $input ) ? $input : (array) $input;
+		$input   = self::normalize_input( $input );
 		$post_id = absint( $input['post_id'] ?? 0 );
 		$post    = get_post( $post_id );
 
@@ -226,55 +215,11 @@ class WP_MCP_Toolkit_ACF_Field_Abilities {
 
 		$fields = get_fields( $post_id );
 
-		if ( ! is_array( $fields ) ) {
-			return array();
-		}
-
-		return $fields;
-	}
-
-	private function register_update_post_fields(): void {
-		wp_register_ability(
-			'wpmcp-acf/update-post-fields',
-			array(
-				'label'               => __( 'Update ACF Post Fields', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Updates ACF field values on a post. Handles text, repeaters, groups, and other field types.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-acf-fields',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id', 'fields' ),
-					'properties' => array(
-						'post_id' => array( 'type' => 'integer' ),
-						'fields'  => array(
-							'type'        => 'object',
-							'description' => __( 'Object of field_name => value pairs.', 'wp-mcp-toolkit' ),
-						),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'       => 'object',
-					'properties' => array(
-						'updated_fields' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
-						'errors'         => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_update_post_fields' ),
-				'permission_callback' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
+		return is_array( $fields ) ? $fields : array();
 	}
 
 	public function execute_update_post_fields( $input = array() ): array|\WP_Error {
-		$input   = is_array( $input ) ? $input : (array) $input;
+		$input   = self::normalize_input( $input );
 		$post_id = absint( $input['post_id'] ?? 0 );
 		$fields  = $input['fields'] ?? array();
 		$post    = get_post( $post_id );

@@ -13,21 +13,17 @@ class WP_MCP_Toolkit_ACF_Module {
 		return class_exists( 'ACF' );
 	}
 
-	public static function get_version(): string {
-		return defined( 'ACF_VERSION' ) ? ACF_VERSION : '';
-	}
-
 	public static function init(): void {
 		if ( ! self::is_active() ) {
 			return;
 		}
 
+		$disabled = get_option( 'wpmcp_disabled_abilities', array() );
+
 		require_once __DIR__ . '/class-acf-field-abilities.php';
-		$fields = new WP_MCP_Toolkit_ACF_Field_Abilities();
-		$fields->register();
+		( new WP_MCP_Toolkit_ACF_Field_Abilities() )->register( $disabled );
 
 		require_once __DIR__ . '/class-acf-block-abilities.php';
-		$blocks = new WP_MCP_Toolkit_ACF_Block_Abilities();
-		$blocks->register();
+		( new WP_MCP_Toolkit_ACF_Block_Abilities() )->register( $disabled );
 	}
 }

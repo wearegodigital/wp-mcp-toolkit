@@ -7,25 +7,15 @@
 
 defined( 'ABSPATH' ) || exit();
 
-class WP_MCP_Toolkit_Media_Abilities {
+class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
-	public function register( array $disabled = array() ): void {
-		if ( ! in_array( 'wpmcp/list-media', $disabled, true ) ) {
-			$this->register_list_media();
-		}
-		if ( ! in_array( 'wpmcp/get-media', $disabled, true ) ) {
-			$this->register_get_media();
-		}
-	}
-
-	private function register_list_media(): void {
-		wp_register_ability(
-			'wpmcp/list-media',
-			array(
-				'label'               => __( 'List Media', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Lists media items with filtering by MIME type and search.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-media',
-				'input_schema'        => array(
+	protected function get_abilities(): array {
+		return array(
+			'wpmcp/list-media' => array(
+				'label'         => __( 'List Media', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists media items with filtering by MIME type and search.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-media',
+				'input_schema'  => array(
 					'type'       => 'object',
 					'properties' => array(
 						'mime_type' => array(
@@ -38,7 +28,7 @@ class WP_MCP_Toolkit_Media_Abilities {
 					),
 					'additionalProperties' => false,
 				),
-				'output_schema'       => array(
+				'output_schema' => array(
 					'type'       => 'object',
 					'properties' => array(
 						'items' => array(
@@ -57,20 +47,45 @@ class WP_MCP_Toolkit_Media_Abilities {
 						'total' => array( 'type' => 'integer' ),
 					),
 				),
-				'execute_callback'    => array( $this, 'execute_list_media' ),
-				'permission_callback' => static function (): bool {
-					return current_user_can( 'upload_files' );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
+				'callback'   => 'execute_list_media',
+				'permission' => 'upload_files',
+			),
+			'wpmcp/get-media' => array(
+				'label'         => __( 'Get Media', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets detailed info for a media item including URL, dimensions, alt text, and caption.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-media',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'media_id' ),
+					'properties' => array(
+						'media_id' => array( 'type' => 'integer' ),
+					),
+					'additionalProperties' => false,
 				),
-			)
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'id'          => array( 'type' => 'integer' ),
+						'title'       => array( 'type' => 'string' ),
+						'url'         => array( 'type' => 'string' ),
+						'mime_type'   => array( 'type' => 'string' ),
+						'alt_text'    => array( 'type' => 'string' ),
+						'caption'     => array( 'type' => 'string' ),
+						'description' => array( 'type' => 'string' ),
+						'width'       => array( 'type' => 'integer' ),
+						'height'      => array( 'type' => 'integer' ),
+						'file_size'   => array( 'type' => 'integer' ),
+						'sizes'       => array( 'type' => 'object' ),
+					),
+				),
+				'callback'   => 'execute_get_media',
+				'permission' => 'upload_files',
+			),
 		);
 	}
 
 	public function execute_list_media( $input = array() ): array {
-		$input = is_array( $input ) ? $input : (array) $input;
+		$input = self::normalize_input( $input );
 
 		$args = array(
 			'post_type'      => 'attachment',
@@ -106,51 +121,8 @@ class WP_MCP_Toolkit_Media_Abilities {
 		);
 	}
 
-	private function register_get_media(): void {
-		wp_register_ability(
-			'wpmcp/get-media',
-			array(
-				'label'               => __( 'Get Media', 'wp-mcp-toolkit' ),
-				'description'         => __( 'Gets detailed info for a media item including URL, dimensions, alt text, and caption.', 'wp-mcp-toolkit' ),
-				'category'            => 'wpmcp-media',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'required'   => array( 'media_id' ),
-					'properties' => array(
-						'media_id' => array( 'type' => 'integer' ),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema'       => array(
-					'type'       => 'object',
-					'properties' => array(
-						'id'          => array( 'type' => 'integer' ),
-						'title'       => array( 'type' => 'string' ),
-						'url'         => array( 'type' => 'string' ),
-						'mime_type'   => array( 'type' => 'string' ),
-						'alt_text'    => array( 'type' => 'string' ),
-						'caption'     => array( 'type' => 'string' ),
-						'description' => array( 'type' => 'string' ),
-						'width'       => array( 'type' => 'integer' ),
-						'height'      => array( 'type' => 'integer' ),
-						'file_size'   => array( 'type' => 'integer' ),
-						'sizes'       => array( 'type' => 'object' ),
-					),
-				),
-				'execute_callback'    => array( $this, 'execute_get_media' ),
-				'permission_callback' => static function ( $input ): bool {
-					return current_user_can( 'upload_files' );
-				},
-				'meta'                => array(
-					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
-					'show_in_rest' => true,
-				),
-			)
-		);
-	}
-
 	public function execute_get_media( $input = array() ): array|\WP_Error {
-		$input    = is_array( $input ) ? $input : (array) $input;
+		$input    = self::normalize_input( $input );
 		$media_id = absint( $input['media_id'] ?? 0 );
 		$post     = get_post( $media_id );
 
