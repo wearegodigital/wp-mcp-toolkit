@@ -13,7 +13,7 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		return array(
 			'wpmcp-acf/list-field-groups' => array(
 				'label'         => __( 'List ACF Field Groups', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Lists all ACF field groups with their titles, keys, and location rules.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists all ACF (Advanced Custom Fields) field groups registered on the site. Each group contains a set of custom fields that appear on specific post types, pages, or options pages based on location_rules. Returns group key (needed for get-field-group), title, active status, field count, and location rules. Call this first to discover what custom fields exist, then use get-field-group for full field definitions.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-acf-fields',
 				'input_schema'  => self::empty_input_schema(),
 				'output_schema' => array(
@@ -34,7 +34,7 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 			),
 			'wpmcp-acf/get-field-group' => array(
 				'label'         => __( 'Get ACF Field Group', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Gets a field group\'s full configuration including all fields with types, choices, and defaults.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets the complete field definitions for an ACF field group. Returns every field with its name (use in get/update-post-fields), label, type (text, textarea, image, repeater, group, select, etc.), required status, default_value, choices (for select/radio/checkbox fields), and sub_fields (for repeater/group types). Use the group_key from list-field-groups. Essential for understanding what values are expected before calling update-post-fields.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-acf-fields',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -75,7 +75,7 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 			),
 			'wpmcp-acf/get-post-fields' => array(
 				'label'         => __( 'Get ACF Post Fields', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Gets all ACF field values for a specific post, including repeaters and groups.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets all ACF custom field values for a specific post. Returns a field_name => value object. Handles all ACF field types including repeaters (returned as arrays of rows), groups (returned as nested objects), images (returned as arrays with url, alt, title), and simple fields (returned as strings/numbers). These are post-level fields stored in wp_postmeta, NOT block-level fields — for ACF block field values within post content, use get-block-fields instead.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-acf-fields',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -97,7 +97,7 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 			),
 			'wpmcp-acf/update-post-fields' => array(
 				'label'         => __( 'Update ACF Post Fields', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Updates ACF field values on a post. Handles text, repeaters, groups, and other field types.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Updates ACF custom field values on a post. Pass fields as {field_name: value} pairs — only fields you include are updated, others are untouched. For repeaters: pass an array of row objects. For groups: pass a nested object. For images: pass the attachment ID (integer). For select/checkbox: pass the choice value(s). HTML in text/textarea values is preserved. These are post-level fields in wp_postmeta — for ACF block fields within post content, use update-block-fields instead.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-acf-fields',
 				'input_schema'  => array(
 					'type'       => 'object',

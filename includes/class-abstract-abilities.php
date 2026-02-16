@@ -94,4 +94,39 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 	protected static function normalize_input( $input ): array {
 		return is_array( $input ) ? $input : (array) $input;
 	}
+
+	/**
+	 * Fix HTML encoding in serialized blocks.
+	 *
+	 * WordPress's serialize_block_attributes() encodes < > " & as unicode
+	 * escapes (\u003c, \u003e, \u0022, \u0026) inside block comment JSON.
+	 * This is correct JSON, but Gutenberg's JS serializer preserves literal
+	 * HTML characters. When the PHP-serialized content is saved and later
+	 * parsed by Gutenberg, the unicode escapes may render as literal text
+	 * (e.g. "u003cstrongu003e" instead of "<strong>").
+	 *
+	 * This method decodes those escapes in block comment attributes to match
+	 * the behavior of Gutenberg's JavaScript serializer.
+	 */
+	protected static function fix_serialized_block_html( string $content ): string {
+		// Match block comment JSON attributes: <!-- wp:block-name {"key":"value"} -->
+		return preg_replace_callback(
+			'/<!-- wp:([a-z][a-z0-9-]*(?:\/[a-z][a-z0-9-]*)?) (\{.*?\}) (\/)?-->/s',
+			static function ( $matches ) {
+				$block_name = $matches[1];
+				$json       = $matches[2];
+				$self_close = $matches[3] ?? '';
+
+				// Decode unicode escapes for HTML characters.
+				$json = str_replace(
+					array( '\\u003c', '\\u003e', '\\u0022', '\\u0026', '\\u0027' ),
+					array( '<',       '>',       '\\"',     '&',       "'" ),
+					$json
+				);
+
+				return '<!-- wp:' . $block_name . ' ' . $json . ' ' . $self_close . '-->';
+			},
+			$content
+		);
+	}
 }

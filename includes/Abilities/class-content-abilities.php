@@ -15,7 +15,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 		return array(
 			'wpmcp/list-post-types' => array(
 				'label'         => __( 'List Post Types', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Lists all registered public post types with their labels, supports, and configuration.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists all registered public post types (post, page, and custom types) with their labels, supported features, and REST API configuration. Call this first to discover what content types exist on the site before using list-posts. Returns: name (slug for use in other tools), label, singular name, whether hierarchical, archive support, REST base, and supported features (title, editor, thumbnail, etc.).', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-content',
 				'input_schema'  => self::empty_input_schema(),
 				'output_schema' => array(
@@ -38,7 +38,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			),
 			'wpmcp/list-posts' => array(
 				'label'         => __( 'List Posts', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Lists posts of any type with pagination, filtering, and search.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists posts of any content type with pagination, filtering by status, and text search. Use post_type slug from list-post-types (e.g. "page", "post", "case-study"). Returns summary data (id, title, slug, status, date, url, excerpt, author) — for full content use get-post with a specific post_id. Supports ordering by date, title, modified, menu_order, or ID.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-content',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -86,7 +86,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			),
 			'wpmcp/get-post' => array(
 				'label'         => __( 'Get Post', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Gets a single post with full content (raw + rendered), excerpt, meta, featured image, status, and taxonomy terms.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets a single post by ID with full details: raw block content (content_raw — the Gutenberg block markup), rendered HTML (content_rendered), excerpt, all public post meta, featured image URL, page template, and taxonomy terms. Use content_raw to understand block structure before editing. For block-level editing, use parse-blocks instead which returns structured block data with indices.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-content',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -129,7 +129,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			),
 			'wpmcp/create-post' => array(
 				'label'         => __( 'Create Post', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Creates a new post, page, or custom post type with title, content, status, meta, and taxonomy terms.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Creates a new post, page, or custom post type. Requires post_type slug and title. Content should be valid Gutenberg block markup (e.g. "<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->") or plain HTML. Defaults to "draft" status — set status to "publish" to make immediately visible. Use taxonomy_terms to assign categories/tags: {"category": ["News"], "post_tag": ["featured"]}. Use meta for custom fields: {"key": "value"}.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-content',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -164,7 +164,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			),
 			'wpmcp/update-post' => array(
 				'label'         => __( 'Update Post', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Updates an existing post. Only provided fields are changed.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Updates an existing post — only fields you provide are changed, others are left untouched. Can update title, content, excerpt, status, meta, and taxonomy_terms. For surgical content edits (changing one block), prefer parse-blocks + update-block-content instead of replacing the entire content field. For ACF fields, use wpmcp-acf/update-post-fields. WARNING: Setting content replaces ALL post content — get the current content with get-post first.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-content',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -198,7 +198,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			),
 			'wpmcp/delete-post' => array(
 				'label'         => __( 'Delete Post', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Trashes or permanently deletes a post.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Moves a post to trash (recoverable) or permanently deletes it. Default behavior is trash — set force=true for permanent deletion. DESTRUCTIVE: permanent deletion cannot be undone. Returns the previous status so you can restore if needed.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-content',
 				'input_schema'  => array(
 					'type'       => 'object',

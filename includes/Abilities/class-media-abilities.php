@@ -13,7 +13,7 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		return array(
 			'wpmcp/list-media' => array(
 				'label'         => __( 'List Media', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Lists media items with filtering by MIME type and search.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists media library items (images, documents, videos, etc.) with optional filtering. Use mime_type to filter by type: "image" (all images), "image/jpeg" (specific format), "application/pdf" (PDFs), "video" (all video). Use search to find by filename or title. Returns id, title, url, mime_type, and date. Use get-media with a specific media_id for full details including dimensions and alt text.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-media',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -52,7 +52,7 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 			),
 			'wpmcp/get-media' => array(
 				'label'         => __( 'Get Media', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Gets detailed info for a media item including URL, dimensions, alt text, and caption.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets full details for a single media item by ID. Returns: url (full-size), mime_type, title, caption, alt_text (for accessibility), description, width/height (for images), file_size in bytes, and date uploaded. Use the media ID from list-media results. The url returned is the direct file URL suitable for use in img tags or downloads.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-media',
 				'input_schema'  => array(
 					'type'       => 'object',

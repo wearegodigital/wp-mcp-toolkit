@@ -13,7 +13,7 @@ class WP_MCP_Toolkit_Taxonomy_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 		return array(
 			'wpmcp/list-taxonomies' => array(
 				'label'         => __( 'List Taxonomies', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Lists all registered public taxonomies with their associated post types.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists all public taxonomies (categories, tags, and custom taxonomies) with the post types they apply to. Returns name (slug for use in list-terms and create-term), label, whether hierarchical (categories-like vs tags-like), associated post types, and REST base. Use this to discover what classification systems exist before managing terms.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-taxonomy',
 				'input_schema'  => self::empty_input_schema(),
 				'output_schema' => array(
@@ -34,7 +34,7 @@ class WP_MCP_Toolkit_Taxonomy_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 			),
 			'wpmcp/list-terms' => array(
 				'label'         => __( 'List Terms', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Lists terms in a taxonomy with count, parent, and description.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists terms (entries) within a specific taxonomy. Requires the taxonomy slug from list-taxonomies (e.g. "category", "post_tag", or a custom taxonomy slug). Returns id, name, slug, description, parent_id (for hierarchical taxonomies), and count (number of posts using this term). Set hide_empty=true to skip terms with no posts. Use search for text filtering.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-taxonomy',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -66,7 +66,7 @@ class WP_MCP_Toolkit_Taxonomy_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 			),
 			'wpmcp/create-term' => array(
 				'label'         => __( 'Create Term', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Creates a new term in a taxonomy.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Creates a new term in a taxonomy. Requires taxonomy slug and term name. For hierarchical taxonomies (like categories), you can set a parent term ID to create nested terms. Optional: slug (auto-generated from name if omitted) and description. Returns the new term ID and slug. To assign terms to posts, use update-post with taxonomy_terms instead.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-taxonomy',
 				'input_schema'  => array(
 					'type'       => 'object',

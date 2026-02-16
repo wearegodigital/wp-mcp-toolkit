@@ -13,7 +13,7 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		return array(
 			'wpmcp-acf/list-acf-blocks' => array(
 				'label'         => __( 'List ACF Blocks', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Lists all registered ACF blocks with their names, titles, and field configurations.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Lists all ACF block types registered on the site. ACF blocks are custom Gutenberg blocks powered by ACF fields — they store field data in the block attributes (attrs.data) within post_content, not in wp_postmeta. Returns name (e.g. "acf/hero"), title, description, category, and icon. Use the name value with get-block-fields and update-block-fields to read/write field values within specific block instances.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-acf-fields',
 				'input_schema'  => self::empty_input_schema(),
 				'output_schema' => array(
@@ -34,7 +34,7 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 			),
 			'wpmcp-acf/get-block-fields' => array(
 				'label'         => __( 'Get ACF Block Fields', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Gets ACF field values from a specific ACF block within a post\'s content.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets ACF field values from a specific ACF block instance within a post\'s content. Find the block by block_name (e.g. "acf/hero" — returns the first match) or block_index (0-based position among ACF blocks only). Returns block_name, block_index, and a fields object with field_name => value pairs (internal ACF keys prefixed with _ are filtered out). Searches recursively through nested/inner blocks. Use this instead of parse-blocks when you need ACF field data specifically.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-acf-fields',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -69,7 +69,7 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 			),
 			'wpmcp-acf/update-block-fields' => array(
 				'label'         => __( 'Update ACF Block Fields', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Updates ACF field values within an ACF block in post content.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Updates ACF field values within a specific ACF block in post content. Find the block by block_name (e.g. "acf/hero") or block_index. Pass fields as {field_name: value} pairs — only specified fields are changed. HTML in values is preserved correctly (the plugin handles WordPress block serialization encoding). Modifies the block\'s attrs.data in post_content and saves via wp_update_post. Use get-block-fields first to see current values and available field names.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-acf-fields',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -200,7 +200,7 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		$result = wp_update_post(
 			array(
 				'ID'           => $post_id,
-				'post_content' => serialize_blocks( $blocks ),
+				'post_content' => self::fix_serialized_block_html( serialize_blocks( $blocks ) ),
 			),
 			true
 		);

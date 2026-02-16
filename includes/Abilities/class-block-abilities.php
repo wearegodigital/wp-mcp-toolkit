@@ -15,7 +15,7 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		return array(
 			'wpmcp/parse-blocks' => array(
 				'label'         => __( 'Parse Blocks', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Parses a post\'s content into a structured list of blocks with names, attributes, and inner content.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Parses a post\'s Gutenberg block content into a structured list. Each block includes: index (flat position for use with update-block-content), block_name (e.g. "core/paragraph", "acf/hero"), attributes (block settings and data), inner_html (the visible content), and inner_blocks (nested children, recursively). Use this before update-block-content to find the correct block index. For ACF block fields, use wpmcp-acf/get-block-fields instead.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-blocks',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -47,7 +47,7 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 			),
 			'wpmcp/update-block-content' => array(
 				'label'         => __( 'Update Block Content', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Updates the HTML content of a specific block within a post, identified by block index or by searching for text. Preserves block markers.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Updates the innerHTML of a specific top-level block, preserving Gutenberg block markers (<!-- wp:... --> comments). Identify the block by block_index (from parse-blocks output) or search_text (finds the first block containing that text). Provide new_content as the full replacement HTML for that block. LIMITATION: Only works on top-level blocks. For nested blocks (e.g. paragraphs inside columns), use get-post to read raw content, modify the text, and update-post to save. For ACF block field values, use wpmcp-acf/update-block-fields instead.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-blocks',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -172,7 +172,7 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		$result = wp_update_post(
 			array(
 				'ID'           => $post_id,
-				'post_content' => serialize_blocks( $blocks ),
+				'post_content' => self::fix_serialized_block_html( serialize_blocks( $blocks ) ),
 			),
 			true
 		);
