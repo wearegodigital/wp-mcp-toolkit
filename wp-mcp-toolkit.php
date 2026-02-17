@@ -13,7 +13,7 @@
  * Description:       Comprehensive MCP toolkit for WordPress — content CRUD, block editing, media, taxonomies, ACF, Gravity Forms, Yoast SEO, and content templates. Fork of the official MCP Adapter.
  * Requires at least: 6.9
  * Version:           0.4.0
- * Requires PHP:      7.4
+ * Requires PHP:      8.1
  * Author:            Sean Wilkinson
  * Author URI:        https://seanwilkinson.com
  * License:           GPLv2 or later

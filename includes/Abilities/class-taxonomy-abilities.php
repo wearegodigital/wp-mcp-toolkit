@@ -123,7 +123,7 @@ class WP_MCP_Toolkit_Taxonomy_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 		$taxonomy = sanitize_key( $input['taxonomy'] ?? '' );
 
 		if ( ! taxonomy_exists( $taxonomy ) ) {
-			return new \WP_Error( 'invalid_taxonomy', __( 'Taxonomy does not exist.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_invalid_taxonomy', __( 'Taxonomy does not exist.', 'wp-mcp-toolkit' ) );
 		}
 
 		$args = array(

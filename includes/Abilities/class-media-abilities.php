@@ -127,7 +127,7 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		$post     = get_post( $media_id );
 
 		if ( ! $post || 'attachment' !== $post->post_type ) {
-			return new \WP_Error( 'not_found', __( 'Media item not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Media item not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$metadata = wp_get_attachment_metadata( $media_id );
