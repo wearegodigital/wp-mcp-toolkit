@@ -379,9 +379,9 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 
 		$post_data = array(
 			'post_type'    => sanitize_key( $input['post_type'] ),
-			'post_title'   => sanitize_text_field( $input['title'] ),
-			'post_content' => wp_kses_post( $input['content'] ?? '' ),
-			'post_excerpt' => sanitize_textarea_field( $input['excerpt'] ?? '' ),
+			'post_title'   => sanitize_text_field( self::decode_unicode_escapes( $input['title'] ) ),
+			'post_content' => wp_kses_post( self::decode_unicode_escapes( $input['content'] ?? '' ) ),
+			'post_excerpt' => sanitize_textarea_field( self::decode_unicode_escapes( $input['excerpt'] ?? '' ) ),
 			'post_status'  => sanitize_key( $input['status'] ?? 'draft' ),
 		);
 
@@ -426,8 +426,9 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 
 		foreach ( $field_map as $input_key => $wp_key ) {
 			if ( isset( $input[ $input_key ] ) ) {
+				$value     = self::decode_unicode_escapes( $input[ $input_key ] );
 				$sanitizer = $sanitizers[ $input_key ] ?? 'sanitize_text_field';
-				$post_data[ $wp_key ] = $sanitizer( $input[ $input_key ] );
+				$post_data[ $wp_key ] = $sanitizer( $value );
 				$updated_fields[] = $input_key;
 			}
 		}
@@ -492,7 +493,8 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			return new \WP_Error( 'invalid_input', __( 'search_text cannot be empty.', 'wp-mcp-toolkit' ) );
 		}
 
-		$content = $post->post_content;
+		$replace_text = self::decode_unicode_escapes( $replace_text );
+		$content      = $post->post_content;
 
 		if ( false === strpos( $content, $search_text ) ) {
 			return new \WP_Error( 'not_found', __( 'search_text not found in post content.', 'wp-mcp-toolkit' ) );

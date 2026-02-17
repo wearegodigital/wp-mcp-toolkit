@@ -81,6 +81,52 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 				'callback'   => 'execute_get_media',
 				'permission' => 'upload_files',
 			),
+			'wpmcp/upload-media' => array(
+				'label'         => __( 'Upload Media', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Downloads an image from a URL and adds it to the WordPress media library (sideload). Provide the source url of the image to download. Optionally set title, alt_text (for accessibility/SEO), caption, and description. Optionally attach to a post_id to associate the media with a specific post. Returns the new attachment id, url, and all available sizes. Supports common image formats (JPEG, PNG, GIF, WebP, SVG) and other file types WordPress allows. The file is downloaded server-side — the URL must be publicly accessible.', 'wp-mcp-toolkit' ),
+				'category'      => 'wpmcp-media',
+				'input_schema'  => array(
+					'type'       => 'object',
+					'required'   => array( 'url' ),
+					'properties' => array(
+						'url'         => array(
+							'type'        => 'string',
+							'description' => __( 'Public URL of the file to download and add to the media library.', 'wp-mcp-toolkit' ),
+						),
+						'title'       => array(
+							'type'        => 'string',
+							'description' => __( 'Title for the media item. Defaults to the filename.', 'wp-mcp-toolkit' ),
+						),
+						'alt_text'    => array(
+							'type'        => 'string',
+							'description' => __( 'Alt text for accessibility and SEO.', 'wp-mcp-toolkit' ),
+						),
+						'caption'     => array( 'type' => 'string' ),
+						'description' => array( 'type' => 'string' ),
+						'post_id'     => array(
+							'type'        => 'integer',
+							'description' => __( 'Optional post ID to attach this media to.', 'wp-mcp-toolkit' ),
+						),
+					),
+					'additionalProperties' => false,
+				),
+				'output_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'id'       => array( 'type' => 'integer' ),
+						'title'    => array( 'type' => 'string' ),
+						'url'      => array( 'type' => 'string' ),
+						'mime_type' => array( 'type' => 'string' ),
+						'width'    => array( 'type' => 'integer' ),
+						'height'   => array( 'type' => 'integer' ),
+						'sizes'    => array( 'type' => 'object' ),
+					),
+				),
+				'callback'    => 'execute_upload_media',
+				'permission'  => 'upload_files',
+				'readonly'    => false,
+				'idempotent'  => false,
+			),
 		);
 	}
 
@@ -155,6 +201,76 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 			'height'      => (int) ( $metadata['height'] ?? 0 ),
 			'file_size'   => (int) ( $metadata['filesize'] ?? 0 ),
 			'sizes'       => $sizes,
+		);
+	}
+
+	public function execute_upload_media( $input = array() ): array|\WP_Error {
+		$input = self::normalize_input( $input );
+		$url   = esc_url_raw( $input['url'] ?? '' );
+
+		if ( empty( $url ) || ! wp_http_validate_url( $url ) ) {
+			return new \WP_Error( 'wpmcp_invalid_url', __( 'A valid, publicly accessible URL is required.', 'wp-mcp-toolkit' ) );
+		}
+
+		// Load required WordPress media functions.
+		if ( ! function_exists( 'media_sideload_image' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+		}
+
+		$parent_post_id = absint( $input['post_id'] ?? 0 );
+
+		// Sideload the file — returns the attachment ID.
+		$attachment_id = media_sideload_image( $url, $parent_post_id, $input['title'] ?? null, 'id' );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		// Set optional metadata.
+		if ( ! empty( $input['alt_text'] ) ) {
+			update_post_meta( $attachment_id, '_wp_attachment_image_alt', sanitize_text_field( $input['alt_text'] ) );
+		}
+
+		$update_data = array( 'ID' => $attachment_id );
+		if ( ! empty( $input['title'] ) ) {
+			$update_data['post_title'] = sanitize_text_field( $input['title'] );
+		}
+		if ( ! empty( $input['caption'] ) ) {
+			$update_data['post_excerpt'] = sanitize_textarea_field( $input['caption'] );
+		}
+		if ( ! empty( $input['description'] ) ) {
+			$update_data['post_content'] = sanitize_textarea_field( $input['description'] );
+		}
+		if ( count( $update_data ) > 1 ) {
+			wp_update_post( $update_data );
+		}
+
+		// Build response.
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+		$sizes    = array();
+
+		if ( ! empty( $metadata['sizes'] ) ) {
+			foreach ( $metadata['sizes'] as $size_name => $size_data ) {
+				$sizes[ $size_name ] = array(
+					'width'  => $size_data['width'],
+					'height' => $size_data['height'],
+					'url'    => wp_get_attachment_image_url( $attachment_id, $size_name ),
+				);
+			}
+		}
+
+		$post = get_post( $attachment_id );
+
+		return array(
+			'id'        => $attachment_id,
+			'title'     => $post->post_title,
+			'url'       => wp_get_attachment_url( $attachment_id ),
+			'mime_type' => $post->post_mime_type,
+			'width'     => (int) ( $metadata['width'] ?? 0 ),
+			'height'    => (int) ( $metadata['height'] ?? 0 ),
+			'sizes'     => $sizes,
 		);
 	}
 }

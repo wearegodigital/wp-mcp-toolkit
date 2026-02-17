@@ -2,7 +2,7 @@
 /.github
 /node_modules
 /tests
-/vendor
+/vendor/bin
 /docs
 /wp-content
 .distignore

@@ -10,9 +10,9 @@
  * @wordpress-plugin
  * Plugin Name:       WP MCP Toolkit
  * Plugin URI:        https://github.com/wearegodigital/wp-mcp-toolkit
- * Description:       Comprehensive MCP toolkit for WordPress — content CRUD, block editing, media, taxonomies, ACF, Gravity Forms, Yoast SEO, and content templates. Fork of the official MCP Adapter.
+ * Description:       Comprehensive MCP toolkit for WordPress — content CRUD, block editing, media, taxonomies, ACF, Gravity Forms, Yoast SEO, and content templates. Built on the official MCP Adapter.
  * Requires at least: 6.9
- * Version:           0.4.0
+ * Version:           0.5.0
  * Requires PHP:      8.1
  * Author:            Sean Wilkinson
  * Author URI:        https://seanwilkinson.com
@@ -23,7 +23,7 @@
 
 declare (strict_types = 1);
 
-namespace WP\MCP;
+namespace WP\MCP\Toolkit;
 
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit();
@@ -33,7 +33,7 @@ defined( 'ABSPATH' ) || exit();
  */
 function constants(): void {
 	define( 'WP_MCP_DIR', plugin_dir_path( __FILE__ ) );
-	define( 'WP_MCP_VERSION', '0.4.0' );
+	define( 'WP_MCP_VERSION', '0.5.0' );
 }
 
 constants();
@@ -42,16 +42,24 @@ add_action( 'init', static function () {
 	load_plugin_textdomain( 'wp-mcp-toolkit', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 } );
 
-require_once __DIR__ . '/includes/Autoloader.php';
-
-// If autoloader failed, we cannot proceed.
-if ( ! Autoloader::autoload() ) {
+// Load Jetpack Autoloader (handles version conflicts across plugins).
+$autoloader = __DIR__ . '/vendor/autoload_packages.php';
+if ( file_exists( $autoloader ) ) {
+	require_once $autoloader;
+} elseif ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+} else {
+	add_action( 'admin_notices', static function () {
+		echo '<div class="notice notice-error"><p>';
+		echo esc_html__( 'WP MCP Toolkit: Composer dependencies are missing. Please run "composer install" in the plugin directory.', 'wp-mcp-toolkit' );
+		echo '</p></div>';
+	} );
 	return;
 }
 
-// Load the upstream MCP Adapter.
-if ( class_exists( Plugin::class ) ) {
-	Plugin::instance();
+// Initialize the upstream MCP Adapter (from Composer package).
+if ( class_exists( \WP\MCP\Plugin::class ) ) {
+	\WP\MCP\Plugin::instance();
 }
 
 // Load the WP MCP Toolkit extensions.

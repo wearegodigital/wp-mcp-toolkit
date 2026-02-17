@@ -10,11 +10,13 @@ BUILD_DIR := $(DIST_DIR)/$(PLUGIN_SLUG)-build
 ## Build distribution zip (production-ready, excludes dev files)
 dist:
 	@echo "Building $(PLUGIN_SLUG) v$(VERSION)..."
-	@echo "1. Copying plugin to clean build directory..."
+	@echo "1. Installing production dependencies..."
+	@composer install --no-dev --optimize-autoloader --no-interaction --quiet
+	@echo "2. Copying plugin to clean build directory..."
 	@rm -rf $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)/$(PLUGIN_SLUG)
 	@rsync -a --exclude-from=.distignore . $(BUILD_DIR)/$(PLUGIN_SLUG)/
-	@echo "2. Creating zip..."
+	@echo "3. Creating zip..."
 	@rm -f $(DIST_FILE)
 	@cd $(BUILD_DIR) && zip -rq $(DIST_FILE) $(PLUGIN_SLUG)/ -x "*.DS_Store"
 	@rm -rf $(BUILD_DIR)

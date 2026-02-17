@@ -127,6 +127,44 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 	}
 
 	/**
+	 * Decode unicode escape sequences in text content.
+	 *
+	 * LLMs sometimes emit bare unicode escape sequences (e.g. "u2014" instead
+	 * of an actual em dash) in generated content. This method catches both
+	 * backslash-prefixed (\u2014) and bare (u2014) patterns between word
+	 * characters and decodes them to proper UTF-8.
+	 *
+	 * Only decodes codepoints in safe ranges (punctuation, symbols, Latin
+	 * Extended) to avoid false positives on words like "autumn" or "unusual".
+	 *
+	 * @param string $content Text to process.
+	 * @return string Content with unicode escapes decoded.
+	 */
+	public static function decode_unicode_escapes( string $content ): string {
+		// First: decode explicit \uXXXX sequences (backslash-prefixed).
+		$content = preg_replace_callback(
+			'/\\\\u([0-9a-fA-F]{4})/',
+			static function ( $m ) {
+				return mb_chr( hexdec( $m[1] ), 'UTF-8' );
+			},
+			$content
+		);
+
+		// Second: decode bare uXXXX between word characters.
+		// Only match codepoints that are clearly unicode symbols, not English words.
+		// Safe ranges: U+00A0-00FF (Latin-1 Supplement), U+2000-27FF (punctuation/symbols).
+		$content = preg_replace_callback(
+			'/(?<=[a-zA-Z0-9])u((?:00[a-fA-F][0-9a-fA-F])|(?:2[0-7][0-9a-fA-F]{2}))(?=[a-zA-Z0-9])/',
+			static function ( $m ) {
+				return mb_chr( hexdec( $m[1] ), 'UTF-8' );
+			},
+			$content
+		);
+
+		return $content;
+	}
+
+	/**
 	 * Fix HTML encoding in serialized blocks.
 	 *
 	 * WordPress's serialize_block_attributes() encodes < > " & as unicode

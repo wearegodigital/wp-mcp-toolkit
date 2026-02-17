@@ -222,6 +222,9 @@ class WP_MCP_Toolkit_Template_Engine {
 			$content = str_replace( '{{' . $placeholder . '}}', wp_kses_post( (string) $value ), $content );
 		}
 
+		// Decode stray unicode escape sequences from LLM-generated content.
+		$content = WP_MCP_Toolkit_Abstract_Abilities::decode_unicode_escapes( $content );
+
 		// Remove any unfilled placeholders (replace with empty string)
 		$content = preg_replace( '/\{\{[a-z0-9_]+\}\}/', '', $content );
 

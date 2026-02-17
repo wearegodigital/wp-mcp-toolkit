@@ -148,6 +148,9 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
 		$block_name = $blocks[ $real_idx ]['blockName'] ?? '';
 
+		// Decode stray unicode escapes from LLM-generated content.
+		$new_content = self::decode_unicode_escapes( $new_content );
+
 		// Update innerHTML and innerContent.
 		$blocks[ $real_idx ]['innerHTML'] = $new_content;
 		if ( ! empty( $blocks[ $real_idx ]['innerContent'] ) ) {
