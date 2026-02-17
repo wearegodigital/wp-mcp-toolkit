@@ -267,6 +267,17 @@ class WP_MCP_Toolkit_Template_Engine {
 	}
 
 	/**
+	 * Delete a saved template for a post type.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return bool True if deleted, false if not found.
+	 */
+	public static function delete_template( string $post_type ): bool {
+		$option_key = 'wpmcp_template_' . sanitize_key( $post_type );
+		return delete_option( $option_key );
+	}
+
+	/**
 	 * Get a saved template.
 	 */
 	public static function get_template( string $post_type ) {

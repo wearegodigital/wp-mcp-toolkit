@@ -1,73 +1,373 @@
+/* ==========================================================================
+   WP MCP Toolkit — Admin Styles
+   Design token system with modern, branded aesthetic.
+   ========================================================================== */
+
+/* ---------- Design Tokens ---------- */
+:root {
+	--wpmcp-primary: #3858e9;
+	--wpmcp-primary-hover: #2a45c2;
+	--wpmcp-primary-light: #eef1fd;
+	--wpmcp-success: #16a34a;
+	--wpmcp-success-light: #dcfce7;
+	--wpmcp-warning: #ca8a04;
+	--wpmcp-warning-light: #fef9c3;
+	--wpmcp-danger: #dc2626;
+	--wpmcp-danger-light: #fee2e2;
+	--wpmcp-bg: #f8fafc;
+	--wpmcp-surface: #ffffff;
+	--wpmcp-border: #e2e8f0;
+	--wpmcp-text: #1e293b;
+	--wpmcp-text-muted: #64748b;
+	--wpmcp-text-light: #94a3b8;
+	--wpmcp-radius: 8px;
+	--wpmcp-radius-sm: 4px;
+	--wpmcp-radius-lg: 12px;
+	--wpmcp-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+	--wpmcp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	--wpmcp-transition: 0.2s ease;
+}
+
+/* ---------- Page Layout ---------- */
+.wpmcp-admin {
+	max-width: 1100px;
+}
+
+.wpmcp-admin h1 {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 23px;
+	font-weight: 600;
+	color: var(--wpmcp-text);
+	padding: 16px 0 8px;
+}
+
+.wpmcp-version-badge {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 500;
+	padding: 2px 8px;
+	background: var(--wpmcp-primary-light);
+	color: var(--wpmcp-primary);
+	border-radius: 20px;
+	vertical-align: middle;
+}
+
+/* ---------- Tab Navigation ---------- */
 .wpmcp-admin .nav-tab-wrapper {
-	margin-bottom: 20px;
+	border-bottom: 1px solid var(--wpmcp-border);
+	margin-bottom: 24px;
+	padding: 0;
 }
 
+.wpmcp-admin .nav-tab {
+	border: none;
+	background: none;
+	color: var(--wpmcp-text-muted);
+	font-weight: 500;
+	padding: 12px 16px;
+	margin-bottom: -1px;
+	border-bottom: 2px solid transparent;
+	transition: color var(--wpmcp-transition), border-color var(--wpmcp-transition);
+}
+
+.wpmcp-admin .nav-tab:hover {
+	color: var(--wpmcp-text);
+	background: none;
+}
+
+.wpmcp-admin .nav-tab-active,
+.wpmcp-admin .nav-tab-active:hover {
+	color: var(--wpmcp-primary);
+	border-bottom-color: var(--wpmcp-primary);
+	background: none;
+}
+
+/* ---------- Tab Content ---------- */
 .wpmcp-tab-content {
-	max-width: 900px;
+	max-width: 960px;
 }
 
+/* ---------- Cards ---------- */
+.wpmcp-card {
+	background: var(--wpmcp-surface);
+	border: 1px solid var(--wpmcp-border);
+	border-radius: var(--wpmcp-radius);
+	padding: 20px 24px;
+	margin-bottom: 16px;
+	box-shadow: var(--wpmcp-shadow);
+}
+
+.wpmcp-card h2 {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--wpmcp-text);
+	margin: 0 0 4px;
+	padding: 0;
+}
+
+.wpmcp-card p {
+	color: var(--wpmcp-text-muted);
+	margin: 0 0 16px;
+	font-size: 13px;
+}
+
+/* ---------- Config Blocks (Connection Tab) ---------- */
 .wpmcp-config-block {
 	position: relative;
-	margin-bottom: 30px;
+	margin-bottom: 24px;
 }
 
 .wpmcp-config-block pre {
-	background: #1d2327;
-	color: #c3c4c7;
+	background: #1e293b;
+	color: #e2e8f0;
 	padding: 16px 20px;
-	border-radius: 4px;
+	border-radius: var(--wpmcp-radius);
 	font-size: 13px;
 	line-height: 1.6;
 	overflow-x: auto;
-	margin: 0 0 8px;
+	margin: 0;
+	font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
 }
 
 .wpmcp-copy-btn {
 	position: absolute;
 	top: 8px;
 	right: 8px;
-}
-
-.wpmcp-module-status {
-	padding: 10px 16px;
-	border-radius: 4px;
-	margin-bottom: 20px;
-	font-weight: 500;
-}
-
-.wpmcp-module-active {
-	background: #d4edda;
-	color: #155724;
-	border: 1px solid #c3e6cb;
-}
-
-.wpmcp-module-inactive {
-	background: #fff3cd;
-	color: #856404;
-	border: 1px solid #ffeeba;
-}
-
-.wpmcp-module-warning {
-	font-weight: 400;
-	color: #856404;
-}
-
-.wpmcp-abilities-table {
-	margin-top: 10px;
-}
-
-.wpmcp-abilities-table code {
+	background: rgba(255, 255, 255, 0.1) !important;
+	color: #e2e8f0 !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	border-radius: var(--wpmcp-radius-sm);
+	padding: 4px 12px !important;
 	font-size: 12px;
-	background: #f0f0f1;
-	padding: 2px 6px;
-	border-radius: 3px;
+	cursor: pointer;
+	transition: background var(--wpmcp-transition);
 }
 
+.wpmcp-copy-btn:hover {
+	background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.wpmcp-copy-btn.copied {
+	background: var(--wpmcp-success) !important;
+	color: #fff !important;
+	border-color: var(--wpmcp-success) !important;
+}
+
+/* ---------- Add-ons Grid ---------- */
+.wpmcp-addons-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.wpmcp-addon-card {
+	background: var(--wpmcp-surface);
+	border: 1px solid var(--wpmcp-border);
+	border-radius: var(--wpmcp-radius);
+	padding: 20px 24px;
+	box-shadow: var(--wpmcp-shadow);
+	display: flex;
+	flex-direction: column;
+	transition: box-shadow var(--wpmcp-transition);
+}
+
+.wpmcp-addon-card:hover {
+	box-shadow: var(--wpmcp-shadow-md);
+}
+
+.wpmcp-addon-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.wpmcp-addon-icon {
+	width: 40px;
+	height: 40px;
+	background: var(--wpmcp-primary-light);
+	color: var(--wpmcp-primary);
+	border-radius: var(--wpmcp-radius);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
+	flex-shrink: 0;
+}
+
+.wpmcp-addon-title {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--wpmcp-text);
+	margin: 0 0 2px;
+}
+
+.wpmcp-addon-meta {
+	font-size: 12px;
+	color: var(--wpmcp-text-muted);
+}
+
+.wpmcp-addon-description {
+	font-size: 13px;
+	color: var(--wpmcp-text-muted);
+	margin: 0 0 16px;
+	flex-grow: 1;
+}
+
+.wpmcp-addon-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 12px;
+	border-top: 1px solid var(--wpmcp-border);
+}
+
+/* ---------- Status Badges ---------- */
+.wpmcp-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	font-weight: 600;
+	padding: 3px 10px;
+	border-radius: 20px;
+	text-transform: uppercase;
+	letter-spacing: 0.025em;
+}
+
+.wpmcp-badge-active {
+	background: var(--wpmcp-success-light);
+	color: var(--wpmcp-success);
+}
+
+.wpmcp-badge-inactive {
+	background: var(--wpmcp-warning-light);
+	color: var(--wpmcp-warning);
+}
+
+.wpmcp-badge-free {
+	background: var(--wpmcp-primary-light);
+	color: var(--wpmcp-primary);
+}
+
+.wpmcp-badge-premium {
+	background: #f5f3ff;
+	color: #7c3aed;
+}
+
+.wpmcp-badge-licensed {
+	background: var(--wpmcp-success-light);
+	color: var(--wpmcp-success);
+}
+
+.wpmcp-badge-unlicensed {
+	background: var(--wpmcp-danger-light);
+	color: var(--wpmcp-danger);
+}
+
+/* ---------- Abilities Groups ---------- */
+.wpmcp-ability-group {
+	background: var(--wpmcp-surface);
+	border: 1px solid var(--wpmcp-border);
+	border-radius: var(--wpmcp-radius);
+	margin-bottom: 12px;
+	box-shadow: var(--wpmcp-shadow);
+	overflow: hidden;
+}
+
+.wpmcp-ability-group-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 20px;
+	cursor: pointer;
+	user-select: none;
+	transition: background var(--wpmcp-transition);
+}
+
+.wpmcp-ability-group-header:hover {
+	background: var(--wpmcp-bg);
+}
+
+.wpmcp-ability-group-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--wpmcp-text);
+}
+
+.wpmcp-ability-group-title .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	color: var(--wpmcp-text-muted);
+	transition: transform var(--wpmcp-transition);
+}
+
+.wpmcp-ability-group.collapsed .wpmcp-ability-group-title .dashicons {
+	transform: rotate(-90deg);
+}
+
+.wpmcp-ability-group-count {
+	font-size: 12px;
+	color: var(--wpmcp-text-muted);
+	font-weight: 400;
+}
+
+.wpmcp-ability-group-body {
+	border-top: 1px solid var(--wpmcp-border);
+}
+
+.wpmcp-ability-group.collapsed .wpmcp-ability-group-body {
+	display: none;
+}
+
+.wpmcp-ability-row {
+	display: flex;
+	align-items: center;
+	padding: 10px 20px;
+	border-bottom: 1px solid #f1f5f9;
+	gap: 16px;
+}
+
+.wpmcp-ability-row:last-child {
+	border-bottom: none;
+}
+
+.wpmcp-ability-name {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--wpmcp-text);
+	min-width: 180px;
+}
+
+.wpmcp-ability-slug {
+	font-size: 11px;
+	color: var(--wpmcp-text-light);
+	font-family: 'SF Mono', Monaco, Consolas, monospace;
+}
+
+.wpmcp-ability-desc {
+	font-size: 13px;
+	color: var(--wpmcp-text-muted);
+	flex-grow: 1;
+}
+
+.wpmcp-ability-toggle {
+	flex-shrink: 0;
+}
+
+/* ---------- Toggle Switches ---------- */
 .wpmcp-toggle {
 	position: relative;
 	display: inline-block;
-	width: 40px;
-	height: 22px;
+	width: 36px;
+	height: 20px;
 }
 
 .wpmcp-toggle input {
@@ -83,27 +383,194 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: #ccc;
-	transition: 0.3s;
-	border-radius: 22px;
+	background-color: #cbd5e1;
+	transition: var(--wpmcp-transition);
+	border-radius: 20px;
 }
 
 .wpmcp-toggle-slider::before {
 	position: absolute;
 	content: "";
-	height: 16px;
-	width: 16px;
+	height: 14px;
+	width: 14px;
 	left: 3px;
 	bottom: 3px;
 	background-color: white;
-	transition: 0.3s;
+	transition: var(--wpmcp-transition);
 	border-radius: 50%;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .wpmcp-toggle input:checked + .wpmcp-toggle-slider {
-	background-color: #2271b1;
+	background-color: var(--wpmcp-primary);
 }
 
 .wpmcp-toggle input:checked + .wpmcp-toggle-slider::before {
-	transform: translateX(18px);
+	transform: translateX(16px);
+}
+
+/* ---------- Templates Tab ---------- */
+.wpmcp-template-form {
+	background: var(--wpmcp-surface);
+	border: 1px solid var(--wpmcp-border);
+	border-radius: var(--wpmcp-radius);
+	padding: 20px 24px;
+	margin-bottom: 24px;
+	box-shadow: var(--wpmcp-shadow);
+}
+
+.wpmcp-template-form .form-table th {
+	font-weight: 500;
+	color: var(--wpmcp-text);
+	padding-top: 16px;
+}
+
+.wpmcp-template-form .form-table td {
+	padding-top: 12px;
+}
+
+.wpmcp-templates-table {
+	background: var(--wpmcp-surface);
+	border: 1px solid var(--wpmcp-border);
+	border-radius: var(--wpmcp-radius);
+	overflow: hidden;
+	box-shadow: var(--wpmcp-shadow);
+}
+
+.wpmcp-templates-table thead th {
+	background: var(--wpmcp-bg);
+	font-weight: 600;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--wpmcp-text-muted);
+	padding: 10px 16px;
+	border-bottom: 1px solid var(--wpmcp-border);
+}
+
+.wpmcp-templates-table tbody td {
+	padding: 12px 16px;
+	font-size: 13px;
+	color: var(--wpmcp-text);
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.wpmcp-templates-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.wpmcp-templates-table code {
+	font-size: 12px;
+	background: var(--wpmcp-bg);
+	padding: 2px 8px;
+	border-radius: var(--wpmcp-radius-sm);
+	color: var(--wpmcp-text);
+}
+
+/* ---------- Select2 Overrides ---------- */
+.wpmcp-template-form .select2-container--default .select2-selection--single {
+	height: 36px;
+	border-color: var(--wpmcp-border);
+	border-radius: var(--wpmcp-radius-sm);
+}
+
+.wpmcp-template-form .select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: 36px;
+	padding-left: 10px;
+	color: var(--wpmcp-text);
+}
+
+.wpmcp-template-form .select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 36px;
+}
+
+/* ---------- Buttons ---------- */
+.wpmcp-admin .button-primary {
+	background: var(--wpmcp-primary);
+	border-color: var(--wpmcp-primary);
+	border-radius: var(--wpmcp-radius-sm);
+	padding: 4px 16px;
+	font-weight: 500;
+	transition: background var(--wpmcp-transition);
+}
+
+.wpmcp-admin .button-primary:hover {
+	background: var(--wpmcp-primary-hover);
+	border-color: var(--wpmcp-primary-hover);
+}
+
+.wpmcp-btn-danger {
+	color: var(--wpmcp-danger) !important;
+	border-color: var(--wpmcp-danger) !important;
+}
+
+.wpmcp-btn-danger:hover {
+	background: var(--wpmcp-danger) !important;
+	color: #fff !important;
+}
+
+/* ---------- Disabled Add-on Card ---------- */
+.wpmcp-addon-card.wpmcp-addon-disabled {
+	opacity: 0.6;
+}
+
+.wpmcp-addon-card.wpmcp-addon-disabled .wpmcp-addon-icon {
+	background: var(--wpmcp-bg);
+	color: var(--wpmcp-text-muted);
+}
+
+/* ---------- License Input ---------- */
+.wpmcp-license-input {
+	display: flex;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.wpmcp-license-input input[type="text"] {
+	flex: 1;
+	border-radius: var(--wpmcp-radius-sm);
+	border-color: var(--wpmcp-border);
+	padding: 4px 10px;
+	font-size: 13px;
+}
+
+/* ---------- Empty States ---------- */
+.wpmcp-empty-state {
+	text-align: center;
+	padding: 40px 20px;
+	color: var(--wpmcp-text-muted);
+}
+
+.wpmcp-empty-state .dashicons {
+	font-size: 48px;
+	width: 48px;
+	height: 48px;
+	color: var(--wpmcp-text-light);
+	margin-bottom: 12px;
+}
+
+/* ---------- Notices ---------- */
+.wpmcp-admin .notice {
+	border-radius: var(--wpmcp-radius-sm);
+	border-left-width: 4px;
+}
+
+/* ---------- Responsive ---------- */
+@media screen and (max-width: 782px) {
+	.wpmcp-addons-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.wpmcp-ability-row {
+		flex-wrap: wrap;
+	}
+
+	.wpmcp-ability-name {
+		min-width: auto;
+		width: 100%;
+	}
+
+	.wpmcp-ability-desc {
+		width: 100%;
+	}
 }

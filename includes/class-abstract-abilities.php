@@ -12,6 +12,81 @@ defined( 'ABSPATH' ) || exit();
 abstract class WP_MCP_Toolkit_Abstract_Abilities {
 
 	/**
+	 * Human-readable labels for ability slugs.
+	 *
+	 * @var array<string, string>
+	 */
+	private static array $ability_labels = array(
+		// Core — Content Management.
+		'wpmcp/get-post'               => 'Get Post',
+		'wpmcp/list-posts'             => 'List Posts',
+		'wpmcp/create-post'            => 'Create Post',
+		'wpmcp/update-post'            => 'Update Post',
+		'wpmcp/delete-post'            => 'Delete Post',
+		// Core — Block Content.
+		'wpmcp/parse-blocks'           => 'Parse Blocks',
+		'wpmcp/replace-content'        => 'Find & Replace Content',
+		'wpmcp/get-content-guide'      => 'Content Workflow Guide',
+		'wpmcp/update-block-content'   => 'Update Block Content',
+		// Core — Taxonomy.
+		'wpmcp/list-taxonomies'        => 'List Taxonomies',
+		'wpmcp/list-terms'             => 'List Terms',
+		'wpmcp/create-term'            => 'Create Term',
+		// Core — Media.
+		'wpmcp/get-media'              => 'Get Media',
+		'wpmcp/list-media'             => 'List Media',
+		'wpmcp/upload-media'           => 'Upload Media',
+		// Core — Schema / Discovery.
+		'wpmcp/get-site-structure'     => 'Site Structure',
+		'wpmcp/list-post-types'        => 'List Post Types',
+		'wpmcp/get-page-tree'          => 'Get Page Tree',
+		// ACF.
+		'wpmcp-acf/get-post-fields'    => 'Get ACF Post Fields',
+		'wpmcp-acf/update-post-fields' => 'Update ACF Post Fields',
+		'wpmcp-acf/list-field-groups'  => 'List Field Groups',
+		'wpmcp-acf/get-field-group'    => 'Get Field Group',
+		'wpmcp-acf/list-acf-blocks'    => 'List ACF Block Types',
+		'wpmcp-acf/get-block-fields'   => 'Get ACF Block Fields',
+		'wpmcp-acf/update-block-fields' => 'Update ACF Block Fields',
+		// Gravity Forms.
+		'wpmcp-gf/list-forms'          => 'List Forms',
+		'wpmcp-gf/get-form'            => 'Get Form',
+		'wpmcp-gf/list-entries'        => 'List Entries',
+		'wpmcp-gf/get-entry'           => 'Get Entry',
+		'wpmcp-gf/create-entry'        => 'Create Entry',
+		// Yoast SEO.
+		'wpmcp-yoast/get-post-seo'     => 'Get Post SEO',
+		'wpmcp-yoast/update-post-seo'  => 'Update Post SEO',
+		'wpmcp-yoast/get-seo-overview' => 'SEO Overview',
+		// Templates.
+		'wpmcp/list-content-templates' => 'List Templates',
+		'wpmcp/get-content-template'   => 'Get Template',
+		'wpmcp/create-from-template'   => 'Create from Template',
+	);
+
+	/**
+	 * Get human-readable label for an ability slug.
+	 *
+	 * Falls back to auto-generating from the slug if not in the map.
+	 * Third-party add-ons can filter labels via 'wpmcp_ability_label'.
+	 *
+	 * @param string $slug Ability slug (e.g. 'wpmcp/get-post').
+	 * @return string Human-readable label.
+	 */
+	public static function get_ability_label( string $slug ): string {
+		if ( isset( self::$ability_labels[ $slug ] ) ) {
+			$label = self::$ability_labels[ $slug ];
+		} else {
+			// Auto-generate: 'wpmcp-foo/get-bar-baz' → 'Get Bar Baz'.
+			$parts = explode( '/', $slug, 2 );
+			$name  = $parts[1] ?? $parts[0];
+			$label = ucwords( str_replace( '-', ' ', $name ) );
+		}
+
+		return apply_filters( 'wpmcp_ability_label', $label, $slug );
+	}
+
+	/**
 	 * Return an array of ability definitions.
 	 *
 	 * Each key is the ability slug (e.g. 'wpmcp/list-posts').

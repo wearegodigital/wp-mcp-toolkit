@@ -4,3 +4,8 @@ node_modules/
 *.log
 .phpunit.result.cache
 .phpcs-cache
+
+# Playwright
+tests/playwright/results/
+tests/playwright/snapshots/
+tests/playwright/.auth/user.json
