@@ -78,6 +78,37 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 	}
 
 	/**
+	 * Permission callback: checks a capability against a post_id from input.
+	 *
+	 * @since 0.4.1
+	 * @param string $cap Capability to check (e.g. 'edit_post', 'read_post', 'delete_post').
+	 * @return callable Permission callback.
+	 */
+	protected static function permission_for_post( string $cap ): callable {
+		return static function ( $input = array() ) use ( $cap ): bool {
+			$input   = is_array( $input ) ? $input : (array) $input;
+			$post_id = absint( $input['post_id'] ?? 0 );
+			return current_user_can( $cap, $post_id );
+		};
+	}
+
+	/**
+	 * Permission callback: checks publish capability for a post type from input.
+	 *
+	 * @since 0.4.1
+	 * @param string $input_key Input key containing the post type slug (default 'post_type').
+	 * @return callable Permission callback.
+	 */
+	protected static function permission_for_post_type( string $input_key = 'post_type' ): callable {
+		return static function ( $input = array() ) use ( $input_key ): bool {
+			$input     = is_array( $input ) ? $input : (array) $input;
+			$post_type = sanitize_key( $input[ $input_key ] ?? 'post' );
+			$pt_obj    = get_post_type_object( $post_type );
+			return $pt_obj && current_user_can( $pt_obj->cap->publish_posts );
+		};
+	}
+
+	/**
 	 * Helper: empty input schema (no parameters).
 	 */
 	protected static function empty_input_schema(): array {

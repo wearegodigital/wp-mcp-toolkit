@@ -131,14 +131,14 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		$post    = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$blocks = parse_blocks( $post->post_content );
 		$target = $this->find_acf_block( $blocks, $input );
 
 		if ( null === $target ) {
-			return new \WP_Error( 'block_not_found', __( 'ACF block not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_block_not_found', __( 'ACF block not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$data = $target['block']['attrs']['data'] ?? array();
@@ -165,14 +165,14 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		$post        = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$blocks = parse_blocks( $post->post_content );
 		$target = $this->find_acf_block( $blocks, $input );
 
 		if ( null === $target ) {
-			return new \WP_Error( 'block_not_found', __( 'ACF block not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_block_not_found', __( 'ACF block not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$block_name = $target['block']['blockName'];

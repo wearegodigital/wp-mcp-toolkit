@@ -76,11 +76,7 @@ class WP_MCP_Toolkit_Yoast_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 				),
 				'callback'   => 'execute_update_post_seo',
 				'readonly'   => false,
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'edit_post' ),
 			),
 			'wpmcp-yoast/get-seo-overview' => array(
 				'label'         => __( 'Get SEO Overview', 'wp-mcp-toolkit' ),
@@ -199,6 +195,12 @@ class WP_MCP_Toolkit_Yoast_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 			'orderby'        => 'date',
 			'order'          => 'DESC',
 		) );
+
+		// Prime post meta cache to avoid N+1 get_post_meta() calls.
+		$post_ids = wp_list_pluck( $query->posts, 'ID' );
+		if ( ! empty( $post_ids ) ) {
+			update_postmeta_cache( $post_ids );
+		}
 
 		$posts_with_seo_title    = 0;
 		$posts_with_meta_desc    = 0;

@@ -39,11 +39,7 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 					),
 				),
 				'callback'   => 'execute_parse_blocks',
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'read_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'read_post' ),
 			),
 			'wpmcp/update-block-content' => array(
 				'label'         => __( 'Update Block Content', 'wp-mcp-toolkit' ),
@@ -79,11 +75,7 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 				),
 				'callback'   => 'execute_update_block_content',
 				'readonly'   => false,
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'edit_post' ),
 			),
 		);
 	}

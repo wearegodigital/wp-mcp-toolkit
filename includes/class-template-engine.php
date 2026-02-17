@@ -15,7 +15,7 @@ class WP_MCP_Toolkit_Template_Engine {
 	public static function extract_template( int $post_id ) {
 		$post = get_post( $post_id );
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', 'Reference post not found.' );
+			return new \WP_Error( 'wpmcp_not_found', 'Reference post not found.' );
 		}
 
 		$blocks = parse_blocks( $post->post_content );
@@ -205,7 +205,7 @@ class WP_MCP_Toolkit_Template_Engine {
 		$template = get_option( $option_key );
 
 		if ( ! $template || empty( $template['raw_template'] ) ) {
-			return new \WP_Error( 'no_template', 'No template found for post type: ' . $post_type );
+			return new \WP_Error( 'wpmcp_no_template', 'No template found for post type: ' . $post_type );
 		}
 
 		$content = $template['raw_template'];
@@ -224,6 +224,11 @@ class WP_MCP_Toolkit_Template_Engine {
 
 		// Remove any unfilled placeholders (replace with empty string)
 		$content = preg_replace( '/\{\{[a-z0-9_]+\}\}/', '', $content );
+
+		// Validate post type exists.
+		if ( ! post_type_exists( $post_type ) ) {
+			return new \WP_Error( 'wpmcp_invalid_post_type', 'Post type does not exist: ' . $post_type );
+		}
 
 		// Create the post
 		$post_id = wp_insert_post( array(

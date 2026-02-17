@@ -92,12 +92,7 @@ class WP_MCP_Toolkit_Template_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 				'callback'   => 'execute_create_from_template',
 				'readonly'   => false,
 				'idempotent' => false,
-				'permission' => static function ( $input ): bool {
-					$input     = is_array( $input ) ? $input : (array) $input;
-					$post_type = sanitize_key( $input['post_type'] ?? 'post' );
-					$pt_obj    = get_post_type_object( $post_type );
-					return $pt_obj && current_user_can( $pt_obj->cap->publish_posts );
-				},
+				'permission' => self::permission_for_post_type(),
 			),
 		);
 	}
@@ -114,7 +109,7 @@ class WP_MCP_Toolkit_Template_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 		$post_type = sanitize_key( $input['post_type'] ?? '' );
 
 		if ( empty( $post_type ) ) {
-			return new \WP_Error( 'missing_post_type', __( 'post_type is required.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_missing_post_type', __( 'post_type is required.', 'wp-mcp-toolkit' ) );
 		}
 
 		require_once dirname( __DIR__ ) . '/class-template-engine.php';
@@ -131,7 +126,7 @@ class WP_MCP_Toolkit_Template_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 		}
 
 		if ( ! $template ) {
-			return new \WP_Error( 'not_found', __( 'No template found for post type: ', 'wp-mcp-toolkit' ) . $post_type );
+			return new \WP_Error( 'wpmcp_not_found', __( 'No template found for post type: ', 'wp-mcp-toolkit' ) . $post_type );
 		}
 
 		return $template;
@@ -146,7 +141,7 @@ class WP_MCP_Toolkit_Template_Abilities extends WP_MCP_Toolkit_Abstract_Abilitie
 		$acf_fields    = is_array( $input['acf_fields'] ?? null ) ? $input['acf_fields'] : array();
 
 		if ( empty( $post_type ) || empty( $title ) ) {
-			return new \WP_Error( 'missing_fields', __( 'post_type and title are required.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_missing_fields', __( 'post_type and title are required.', 'wp-mcp-toolkit' ) );
 		}
 
 		require_once dirname( __DIR__ ) . '/class-template-engine.php';

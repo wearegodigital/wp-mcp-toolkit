@@ -121,11 +121,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 					),
 				),
 				'callback'   => 'execute_get_post',
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'read_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'read_post' ),
 			),
 			'wpmcp/create-post' => array(
 				'label'         => __( 'Create Post', 'wp-mcp-toolkit' ),
@@ -155,12 +151,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 				'callback'    => 'execute_create_post',
 				'readonly'    => false,
 				'idempotent'  => false,
-				'permission'  => static function ( $input ): bool {
-					$input     = is_array( $input ) ? $input : (array) $input;
-					$post_type = sanitize_key( $input['post_type'] ?? 'post' );
-					$pt_obj    = get_post_type_object( $post_type );
-					return $pt_obj && current_user_can( $pt_obj->cap->publish_posts );
-				},
+				'permission'  => self::permission_for_post_type(),
 			),
 			'wpmcp/update-post' => array(
 				'label'         => __( 'Update Post', 'wp-mcp-toolkit' ),
@@ -190,11 +181,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 				),
 				'callback'   => 'execute_update_post',
 				'readonly'   => false,
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'edit_post' ),
 			),
 			'wpmcp/delete-post' => array(
 				'label'         => __( 'Delete Post', 'wp-mcp-toolkit' ),
@@ -224,11 +211,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 				'readonly'    => false,
 				'destructive' => true,
 				'idempotent'  => false,
-				'permission'  => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'delete_post', $post_id );
-				},
+				'permission'  => self::permission_for_post( 'delete_post' ),
 			),
 			'wpmcp/replace-content' => array(
 				'label'         => __( 'Replace Content', 'wp-mcp-toolkit' ),
@@ -264,11 +247,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 				),
 				'callback'   => 'execute_replace_content',
 				'readonly'   => false,
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'edit_post' ),
 			),
 		);
 	}
@@ -311,6 +290,12 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 
 		$query = new \WP_Query( $query_args );
 		$posts = array();
+
+		// Prime user cache to avoid N+1 get_userdata() calls.
+		$author_ids = wp_list_pluck( $query->posts, 'post_author' );
+		if ( ! empty( $author_ids ) ) {
+			cache_users( array_unique( array_map( 'absint', $author_ids ) ) );
+		}
 
 		foreach ( $query->posts as $post ) {
 			$author  = get_userdata( $post->post_author );

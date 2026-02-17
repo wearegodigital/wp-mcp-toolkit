@@ -153,7 +153,7 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 
 		$group = acf_get_field_group( $group_key );
 		if ( ! $group ) {
-			return new \WP_Error( 'not_found', __( 'Field group not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Field group not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$fields     = acf_get_fields( $group_key );
@@ -210,7 +210,7 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		$post    = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$fields = get_fields( $post_id );
@@ -225,11 +225,11 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		$post    = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		if ( ! is_array( $fields ) && ! is_object( $fields ) ) {
-			return new \WP_Error( 'invalid_fields', __( 'Fields must be an object.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_invalid_fields', __( 'Fields must be an object.', 'wp-mcp-toolkit' ) );
 		}
 
 		$fields  = (array) $fields;

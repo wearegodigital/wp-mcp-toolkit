@@ -232,7 +232,7 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
 		$form = \GFAPI::get_form( $form_id );
 		if ( ! $form ) {
-			return new \WP_Error( 'not_found', __( 'Form not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Form not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$fields = array();
@@ -270,7 +270,7 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
 		$form = \GFAPI::get_form( $form_id );
 		if ( ! $form ) {
-			return new \WP_Error( 'not_found', __( 'Form not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Form not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$per_page = absint( $input['per_page'] ?? 20 );
@@ -349,7 +349,7 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		}
 
 		if ( ! $entry ) {
-			return new \WP_Error( 'not_found', __( 'Entry not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Entry not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$sensitive_fields = array( 'ip', 'user_agent', 'source_url' );
@@ -367,11 +367,11 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
 		$form = \GFAPI::get_form( $form_id );
 		if ( ! $form ) {
-			return new \WP_Error( 'not_found', __( 'Form not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Form not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		if ( ! is_array( $field_values ) && ! is_object( $field_values ) ) {
-			return new \WP_Error( 'invalid_fields', __( 'field_values must be an object.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_invalid_fields', __( 'field_values must be an object.', 'wp-mcp-toolkit' ) );
 		}
 
 		$field_values = (array) $field_values;
