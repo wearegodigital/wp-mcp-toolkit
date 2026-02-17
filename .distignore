@@ -2,14 +2,13 @@
 /.github
 /node_modules
 /tests
-/vendor/phpstan
-/vendor/squizlabs
-/vendor/phpcompatibility
-/vendor/phpunit
-/vendor/wp-coding-standards
+/vendor
+/docs
+/wp-content
 .distignore
 .editorconfig
 .gitignore
+.gitattributes
 .phpcs.xml
 .phpcs.xml.dist
 CLAUDE.md
@@ -17,6 +16,7 @@ CONTRIBUTING.md
 Makefile
 README.md
 README-INITIAL.md
+composer.json
 composer.lock
 phpcs.xml.dist
 phpstan.neon.dist
