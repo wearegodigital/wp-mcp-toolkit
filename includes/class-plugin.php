@@ -56,6 +56,25 @@ final class WP_MCP_Toolkit {
 			);
 		}
 
+		if ( class_exists( 'GFAPI' ) ) {
+			$categories['wpmcp-gf'] = array(
+				'label'       => __( 'Gravity Forms', 'wp-mcp-toolkit' ),
+				'description' => __( 'Abilities for managing Gravity Forms data and entries.', 'wp-mcp-toolkit' ),
+			);
+		}
+
+		if ( defined( 'WPSEO_VERSION' ) ) {
+			$categories['wpmcp-yoast'] = array(
+				'label'       => __( 'Yoast SEO', 'wp-mcp-toolkit' ),
+				'description' => __( 'Abilities for managing Yoast SEO metadata.', 'wp-mcp-toolkit' ),
+			);
+		}
+
+		$categories['wpmcp-templates'] = array(
+			'label'       => __( 'Content Templates', 'wp-mcp-toolkit' ),
+			'description' => __( 'Abilities for managing content templates and creating posts from templates.', 'wp-mcp-toolkit' ),
+		);
+
 		foreach ( $categories as $slug => $args ) {
 			wp_register_ability_category( $slug, $args );
 		}
@@ -70,6 +89,23 @@ final class WP_MCP_Toolkit {
 			require_once __DIR__ . '/modules/acf/class-acf-module.php';
 			WP_MCP_Toolkit_ACF_Module::init();
 		}
+
+		// Gravity Forms module.
+		if ( class_exists( 'GFAPI' ) ) {
+			require_once __DIR__ . '/modules/gravity-forms/class-gf-module.php';
+			WP_MCP_Toolkit_GF_Module::init();
+		}
+
+		// Yoast SEO module.
+		if ( defined( 'WPSEO_VERSION' ) ) {
+			require_once __DIR__ . '/modules/yoast/class-yoast-module.php';
+			WP_MCP_Toolkit_Yoast_Module::init();
+		}
+
+		// Content Templates (always available).
+		require_once __DIR__ . '/Abilities/class-template-abilities.php';
+		$disabled = get_option( 'wpmcp_disabled_abilities', array() );
+		( new WP_MCP_Toolkit_Template_Abilities() )->register( $disabled );
 	}
 
 	public function register_admin_page(): void {

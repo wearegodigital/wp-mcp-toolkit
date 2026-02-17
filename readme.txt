@@ -1,14 +1,14 @@
 === WP MCP Toolkit ===
 Contributors: seanwilkinson
-Tags: mcp, ai, claude, content-management, api, acf, blocks, llm
+Tags: mcp, ai, claude, content-management, api, acf, blocks, llm, gravity-forms, yoast-seo
 Requires at least: 6.9
 Tested up to: 6.9.1
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Comprehensive WordPress MCP server for AI agents. Single plugin install — no separate MCP adapter needed. 24 abilities for content, blocks, media, ACF.
+Comprehensive WordPress MCP server for AI agents. Single plugin install — no separate MCP adapter needed. 35 abilities for content, blocks, media, ACF, Gravity Forms, Yoast SEO, and content templates.
 
 == Description ==
 
@@ -21,9 +21,12 @@ MCP (Model Context Protocol) is Anthropic's standard for connecting AI agents to
 = Key Features =
 
 * **One Plugin Install** — Replaces both MCP Adapter and custom ability code
-* **24 Content Abilities** — CRUD operations for posts, pages, custom post types, taxonomies, media, and more
+* **35 Content Abilities** — CRUD operations for posts, pages, custom post types, taxonomies, media, and more
 * **Block Editing** — Parse and edit WordPress blocks with AI-friendly tools
 * **ACF Module** — Auto-detects Advanced Custom Fields and adds 7 abilities for field groups, field values, and ACF blocks
+* **Gravity Forms Module** — Auto-detects Gravity Forms and adds 5 abilities for forms, entries, and form data
+* **Yoast SEO Module** — Auto-detects Yoast SEO and adds 3 abilities for reading and writing SEO metadata
+* **Content Templates** — Extract block structure templates from reference posts and create new content from templates
 * **Agent-Friendly** — Tool descriptions optimized for AI consumption
 * **Content Workflow Guide** — Built-in `wpmcp/get-content-guide` ability teaches AI agents WordPress content patterns
 * **Admin Settings Page** — Connection info, ability toggles, and status at a glance
