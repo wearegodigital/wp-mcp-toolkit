@@ -1,8 +1,8 @@
 === WP MCP Toolkit ===
 Contributors: seanwilkinson
-Tags: mcp, ai, claude, content-management, api, acf, blocks, llm, gravity-forms, yoast-seo
+Tags: mcp, ai, content-management, blocks, acf
 Requires at least: 6.9
-Tested up to: 6.9.1
+Tested up to: 6.9
 Stable tag: 0.4.0
 Requires PHP: 7.4
 License: GPLv2 or later
@@ -80,7 +80,7 @@ MCP (Model Context Protocol) is Anthropic's standard for connecting AI agents to
 
 = Why WP MCP Toolkit? =
 
-The official WordPress MCP Adapter provides only basic site info and healthcheck. WP MCP Toolkit adds 24 abilities for real content management work:
+The official WordPress MCP Adapter provides only basic site info and healthcheck. WP MCP Toolkit adds 35 abilities for real content management work:
 
 * AI agents can create, read, update, and delete WordPress content
 * Block-level editing without manual JSON manipulation
@@ -127,11 +127,11 @@ Replace `/path/to/` with the actual path to your WordPress installation.
 
 = Does this replace the official WordPress MCP Adapter? =
 
-Yes. WP MCP Toolkit is a fork of the official adapter that includes all core adapter functionality plus 23 additional abilities. You only need one or the other, not both.
+Yes. WP MCP Toolkit is a fork of the official adapter that includes all core adapter functionality plus 29 additional abilities. You only need one or the other, not both.
 
 = Do I need Advanced Custom Fields (ACF)? =
 
-No. ACF is optional. The ACF module auto-loads when ACF is detected, adding 3 abilities for field group and field value management. Without ACF, you still get 23 abilities.
+No. ACF is optional. The ACF module auto-loads when ACF is detected, adding 7 abilities for field group and field value management. Without ACF, you still get 29 abilities.
 
 = What AI clients work with this plugin? =
 
@@ -169,6 +169,13 @@ Yes. The block parsing and serialization abilities work with all WordPress block
 
 == Changelog ==
 
+= 0.4.0 =
+* Added: Gravity Forms module — 5 abilities for listing forms, viewing entries, and creating entries (auto-loads when Gravity Forms is active)
+* Added: Yoast SEO module — 3 abilities for reading and writing SEO metadata (auto-loads when Yoast SEO is active)
+* Added: Content Templates — 3 abilities for extracting block structure templates from reference posts and creating new content from templates
+* Added: Admin settings Templates tab for template management
+* Updated: 35 total abilities (was 24)
+
 = 0.3.0 =
 * Added: `wpmcp/replace-content` ability for find-and-replace in post content at any nesting depth
 * Added: `wpmcp/get-content-guide` ability — teaches AI agents WordPress content patterns
@@ -187,6 +194,9 @@ Yes. The block parsing and serialization abilities work with all WordPress block
 * Added: Admin settings page with connection info and ability toggles
 
 == Upgrade Notice ==
+
+= 0.4.0 =
+Adds Gravity Forms, Yoast SEO, and Content Templates modules. 35 total abilities.
 
 = 0.3.0 =
 Adds replace-content ability, content guide for AI agents, fixes HTML encoding in blocks, rewrites all tool descriptions.

@@ -133,7 +133,7 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 	public function execute_update_block_content( $input = array() ): array|\WP_Error {
 		$input       = self::normalize_input( $input );
 		$post_id     = absint( $input['post_id'] ?? 0 );
-		$new_content = $input['new_content'] ?? '';
+		$new_content = wp_kses_post( $input['new_content'] ?? '' );
 		$post        = get_post( $post_id );
 
 		if ( ! $post ) {

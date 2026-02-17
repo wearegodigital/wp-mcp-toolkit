@@ -75,34 +75,34 @@ foreach ( $abilities as $ability ) {
 
 			<div class="wpmcp-module-status">
 				<?php if ( $acf_active ) : ?>
-					<div class="wpmcp-acf-status wpmcp-acf-active">
+					<div class="wpmcp-module-status wpmcp-module-active">
 						<?php printf( esc_html__( 'ACF Detected (v%s)', 'wp-mcp-toolkit' ), esc_html( $acf_version ) ); ?>
 						<?php if ( version_compare( $acf_version, '6.8', '<' ) ) : ?>
-							<span class="wpmcp-acf-warning"> — <?php esc_html_e( 'Update to 6.8+ recommended for native Abilities API support', 'wp-mcp-toolkit' ); ?></span>
+							<span class="wpmcp-module-warning"> — <?php esc_html_e( 'Update to 6.8+ recommended for native Abilities API support', 'wp-mcp-toolkit' ); ?></span>
 						<?php endif; ?>
 					</div>
 				<?php else : ?>
-					<div class="wpmcp-acf-status wpmcp-acf-inactive">
+					<div class="wpmcp-module-status wpmcp-module-inactive">
 						<?php esc_html_e( 'ACF not detected — ACF abilities are disabled', 'wp-mcp-toolkit' ); ?>
 					</div>
 				<?php endif; ?>
 
 				<?php if ( $gf_active ) : ?>
-					<div class="wpmcp-acf-status wpmcp-acf-active">
+					<div class="wpmcp-module-status wpmcp-module-active">
 						<?php printf( esc_html__( 'Gravity Forms Detected (v%s)', 'wp-mcp-toolkit' ), esc_html( $gf_version ) ); ?>
 					</div>
 				<?php else : ?>
-					<div class="wpmcp-acf-status wpmcp-acf-inactive">
+					<div class="wpmcp-module-status wpmcp-module-inactive">
 						<?php esc_html_e( 'Gravity Forms not detected — GF abilities are disabled', 'wp-mcp-toolkit' ); ?>
 					</div>
 				<?php endif; ?>
 
 				<?php if ( $yoast_active ) : ?>
-					<div class="wpmcp-acf-status wpmcp-acf-active">
+					<div class="wpmcp-module-status wpmcp-module-active">
 						<?php printf( esc_html__( 'Yoast SEO Detected (v%s)', 'wp-mcp-toolkit' ), esc_html( $yoast_version ) ); ?>
 					</div>
 				<?php else : ?>
-					<div class="wpmcp-acf-status wpmcp-acf-inactive">
+					<div class="wpmcp-module-status wpmcp-module-inactive">
 						<?php esc_html_e( 'Yoast SEO not detected — Yoast abilities are disabled', 'wp-mcp-toolkit' ); ?>
 					</div>
 				<?php endif; ?>

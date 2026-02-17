@@ -188,6 +188,9 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 				$updated = array();
 				foreach ( $new_fields as $key => $value ) {
 					$key = sanitize_text_field( $key );
+					if ( is_string( $value ) ) {
+						$value = wp_kses_post( $value );
+					}
 					$ref[ $segment ]['attrs']['data'][ $key ] = $value;
 					$updated[] = $key;
 				}

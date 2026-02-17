@@ -227,10 +227,10 @@ class WP_MCP_Toolkit_Template_Engine {
 
 		// Create the post
 		$post_id = wp_insert_post( array(
-			'post_type' => sanitize_key( $post_type ),
-			'post_title' => sanitize_text_field( $title ),
-			'post_content' => $content,
-			'post_status' => sanitize_key( $status ),
+			'post_type'    => sanitize_key( $post_type ),
+			'post_title'   => sanitize_text_field( $title ),
+			'post_content' => wp_kses_post( $content ),
+			'post_status'  => sanitize_key( $status ),
 		), true );
 
 		if ( is_wp_error( $post_id ) ) {
@@ -272,7 +272,10 @@ class WP_MCP_Toolkit_Template_Engine {
 	public static function list_templates(): array {
 		global $wpdb;
 		$results = $wpdb->get_col(
-			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'wpmcp_template_%'"
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+				'wpmcp_template_%'
+			)
 		);
 
 		$templates = array();

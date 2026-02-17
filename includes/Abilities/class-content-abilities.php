@@ -495,7 +495,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 		$input        = self::normalize_input( $input );
 		$post_id      = absint( $input['post_id'] ?? 0 );
 		$search_text  = $input['search_text'] ?? '';
-		$replace_text = $input['replace_text'] ?? '';
+		$replace_text = wp_kses_post( $input['replace_text'] ?? '' );
 		$replace_all  = ! empty( $input['replace_all'] );
 		$post         = get_post( $post_id );
 
@@ -548,7 +548,13 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			return false;
 		}
 		foreach ( $input['meta'] as $key => $value ) {
-			update_post_meta( $post_id, sanitize_key( $key ), $value );
+			$key = sanitize_key( $key );
+			if ( is_string( $value ) ) {
+				$value = sanitize_text_field( $value );
+			} elseif ( is_array( $value ) ) {
+				$value = array_map( 'sanitize_text_field', $value );
+			}
+			update_post_meta( $post_id, $key, $value );
 		}
 		return true;
 	}

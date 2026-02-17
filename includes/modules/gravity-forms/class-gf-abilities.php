@@ -169,9 +169,6 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 						'form_id'      => array( 'type' => 'integer' ),
 						'date_created' => array( 'type' => 'string' ),
 						'status'       => array( 'type' => 'string' ),
-						'ip'           => array( 'type' => 'string' ),
-						'source_url'   => array( 'type' => 'string' ),
-						'user_agent'   => array( 'type' => 'string' ),
 					),
 				),
 				'callback'   => 'execute_get_entry',
@@ -327,6 +324,7 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
 		$result = array();
 		foreach ( $entries as $entry ) {
+			unset( $entry['ip'], $entry['user_agent'], $entry['source_url'] );
 			$result[] = $entry;
 		}
 
@@ -354,6 +352,11 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 			return new \WP_Error( 'not_found', __( 'Entry not found.', 'wp-mcp-toolkit' ) );
 		}
 
+		$sensitive_fields = array( 'ip', 'user_agent', 'source_url' );
+		foreach ( $sensitive_fields as $field ) {
+			unset( $entry[ $field ] );
+		}
+
 		return $entry;
 	}
 
@@ -378,8 +381,8 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		);
 
 		foreach ( $field_values as $field_id => $value ) {
-			$field_id         = sanitize_text_field( $field_id );
-			$entry[ $field_id ] = $value;
+			$field_id           = sanitize_text_field( $field_id );
+			$entry[ $field_id ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;
 		}
 
 		$entry_id = \GFAPI::add_entry( $entry );

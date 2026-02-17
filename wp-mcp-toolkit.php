@@ -37,6 +37,11 @@ function constants(): void {
 }
 
 constants();
+
+add_action( 'init', static function () {
+	load_plugin_textdomain( 'wp-mcp-toolkit', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+} );
+
 require_once __DIR__ . '/includes/Autoloader.php';
 
 // If autoloader failed, we cannot proceed.

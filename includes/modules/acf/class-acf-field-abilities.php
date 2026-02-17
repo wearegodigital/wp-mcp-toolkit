@@ -238,6 +238,9 @@ class WP_MCP_Toolkit_ACF_Field_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 
 		foreach ( $fields as $field_name => $value ) {
 			$field_name = sanitize_text_field( $field_name );
+			if ( is_string( $value ) ) {
+				$value = wp_kses_post( $value );
+			}
 			$result = update_field( $field_name, $value, $post_id );
 
 			if ( false === $result ) {
