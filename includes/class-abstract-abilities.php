@@ -192,7 +192,7 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 	protected static function empty_input_schema(): array {
 		return array(
 			'type'                 => 'object',
-			'properties'           => new \stdClass(),
+			'properties'           => array(),
 			'additionalProperties' => false,
 		);
 	}
