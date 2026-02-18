@@ -18,6 +18,7 @@
 		"allow-plugins": {
 			"automattic/jetpack-autoloader": true,
 			"composer/installers": true,
+			"cweagans/composer-patches": true,
 			"dealerdirect/phpcodesniffer-composer-installer": true,
 			"phpstan/extension-installer": true
 		}
@@ -26,7 +27,15 @@
 	"require": {
 		"php": "^8.1",
 		"automattic/jetpack-autoloader": "^3",
+		"cweagans/composer-patches": "^1.7",
 		"wordpress/mcp-adapter": "^0.4"
+	},
+	"extra": {
+		"patches": {
+			"wordpress/mcp-adapter": {
+				"Fix stdClass input in Execute/GetAbilityInfo abilities (upstream bug)": "patches/mcp-adapter-stdclass-input.patch"
+			}
+		}
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^9.6",
