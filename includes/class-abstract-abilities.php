@@ -129,13 +129,22 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 				$permission_callback = $permission;
 			}
 
+			// Ensure non-empty input schemas have a default so that
+			// WP_Ability::normalize_input() converts null → array().
+			// The upstream MCP adapter converts empty {} params to null,
+			// which would otherwise fail schema validation.
+			$input_schema = $def['input_schema'];
+			if ( ! empty( $input_schema ) && ! array_key_exists( 'default', $input_schema ) ) {
+				$input_schema['default'] = array();
+			}
+
 			wp_register_ability(
 				$slug,
 				array(
 					'label'               => $def['label'],
 					'description'         => $def['description'],
 					'category'            => $def['category'],
-					'input_schema'        => $def['input_schema'],
+					'input_schema'        => $input_schema,
 					'output_schema'       => $def['output_schema'],
 					'execute_callback'    => array( $this, $def['callback'] ),
 					'permission_callback' => $permission_callback,
@@ -190,11 +199,7 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 	 * Helper: empty input schema (no parameters).
 	 */
 	protected static function empty_input_schema(): array {
-		return array(
-			'type'                 => 'object',
-			'properties'           => array(),
-			'additionalProperties' => false,
-		);
+		return array();
 	}
 
 	/**
