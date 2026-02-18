@@ -145,6 +145,9 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 							'destructive' => $destructive,
 							'idempotent'  => $idempotent,
 						),
+						'mcp'          => array(
+							'public' => true,
+						),
 						'show_in_rest' => true,
 					),
 				)
