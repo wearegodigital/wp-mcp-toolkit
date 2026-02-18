@@ -203,10 +203,13 @@ class WP_MCP_Toolkit_Admin_Page {
 	// ── Config Helpers ─────────────────────────────────────────────
 
 	public function get_stdio_config(): array {
+		$current_user = wp_get_current_user();
+
 		return array(
 			'command' => 'wp',
 			'args'    => array(
 				'--path=' . ABSPATH,
+				'--user=' . $current_user->user_login,
 				'mcp-adapter',
 				'serve',
 			),
@@ -214,12 +217,14 @@ class WP_MCP_Toolkit_Admin_Page {
 	}
 
 	public function get_http_config(): array {
+		$current_user = wp_get_current_user();
+
 		return array(
 			'command' => 'npx',
 			'args'    => array( '@anthropic/mcp-wordpress-remote' ),
 			'env'     => array(
 				'WP_API_URL'      => rest_url(),
-				'WP_API_USERNAME' => '(your-username)',
+				'WP_API_USERNAME' => $current_user->user_login,
 				'WP_API_PASSWORD' => '(application-password)',
 			),
 		);
