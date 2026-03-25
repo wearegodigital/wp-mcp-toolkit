@@ -19,10 +19,12 @@ class WP_MCP_Toolkit_Workspace_Module {
 			return;
 		}
 
-		require_once __DIR__ . '/class-workspace-abilities.php';
-		( new WP_MCP_Toolkit_Workspace_Abilities() )->register( $disabled );
+		// Load all workspace infrastructure classes.
+		foreach ( glob( __DIR__ . '/class-workspace-*.php' ) as $file ) {
+			require_once $file;
+		}
 
-		require_once __DIR__ . '/class-workspace-blocks-abilities.php';
+		( new WP_MCP_Toolkit_Workspace_Abilities() )->register( $disabled );
 		( new WP_MCP_Toolkit_Workspace_Blocks_Abilities() )->register( $disabled );
 	}
 

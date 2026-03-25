@@ -54,7 +54,11 @@ class WP_MCP_Toolkit_Bricks_Workspace_Addon implements WP_MCP_Toolkit_Addon {
 	}
 
 	public function register_abilities( array $disabled ): void {
-		require_once __DIR__ . '/../workspace/class-workspace-bricks-abilities.php';
+		// Load all workspace infrastructure (Bricks abilities share the same classes).
+		foreach ( glob( __DIR__ . '/../workspace/class-workspace-*.php' ) as $file ) {
+			require_once $file;
+		}
+
 		( new WP_MCP_Toolkit_Workspace_Bricks_Abilities() )->register( $disabled );
 	}
 }
