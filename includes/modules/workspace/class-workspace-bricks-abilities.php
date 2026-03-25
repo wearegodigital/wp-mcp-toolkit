@@ -268,7 +268,7 @@ class WP_MCP_Toolkit_Workspace_Bricks_Abilities extends WP_MCP_Toolkit_Abstract_
 
 			if ( $has_render ) {
 				$existing_php = preg_replace(
-					'/(echo "<div \{\$root_attributes\}>";)\n.*?(\n\t\techo \'<\/div>\';)/s',
+					'/(echo "<div \{\$this->render_attributes\( \'_root\' \)\}>";)\n.*?(\n\t\techo \'<\/div>\';)/s',
 					'$1' . "\n\t\t" . $render_php . '$2',
 					$existing_php
 				);
