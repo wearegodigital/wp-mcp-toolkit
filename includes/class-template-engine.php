@@ -143,7 +143,7 @@ class WP_MCP_Toolkit_Template_Engine {
 
 				// Replace just the text content, preserving HTML tags
 				$block['innerHTML'] = preg_replace(
-					'/>(.*?)</s',
+					'/>([^<]*)</',
 					'>' . $placeholder_marker . '<',
 					$block['innerHTML'],
 					1
@@ -153,7 +153,7 @@ class WP_MCP_Toolkit_Template_Engine {
 					foreach ( $block['innerContent'] as $ci => $c ) {
 						if ( is_string( $c ) && trim( $c ) !== '' ) {
 							$block['innerContent'][ $ci ] = preg_replace(
-								'/>(.*?)</s',
+								'/>([^<]*)</',
 								'>' . $placeholder_marker . '<',
 								$c,
 								1
