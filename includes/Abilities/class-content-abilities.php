@@ -1,8 +1,8 @@
 <?php
 /**
- * WP MCP Toolkit — Content Management Abilities.
+ * WP MCP Toolkit — Content Read Abilities.
  *
- * CRUD operations for posts, pages, and custom post types.
+ * Read-only operations for posts, pages, and custom post types.
  *
  * @package wp-mcp-toolkit
  */
@@ -123,131 +123,37 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 				'callback'   => 'execute_get_post',
 				'permission' => self::permission_for_post( 'read_post' ),
 			),
-			'wpmcp/create-post' => array(
-				'label'         => __( 'Create Post', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Creates a new post, page, or custom post type. Requires post_type slug and title. Content should be valid Gutenberg block markup (e.g. "<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->") or plain HTML. Defaults to "draft" status — set status to "publish" to make immediately visible. Use taxonomy_terms to assign categories/tags: {"category": ["News"], "post_tag": ["featured"]}. Use meta for custom fields: {"key": "value"}.', 'wp-mcp-toolkit' ),
+			'wpmcp/get-page-tree' => array(
+				'label'         => __( 'Get Page Tree', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Returns a hierarchical tree of all pages (or any hierarchical post type), showing parent-child relationships. Useful for understanding site structure before creating or updating pages. Each node includes id, title, slug, status, and url.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-content',
 				'input_schema'  => array(
 					'type'       => 'object',
-					'required'   => array( 'post_type', 'title' ),
 					'properties' => array(
-						'post_type'      => array( 'type' => 'string' ),
-						'title'          => array( 'type' => 'string' ),
-						'content'        => array( 'type' => 'string', 'default' => '' ),
-						'excerpt'        => array( 'type' => 'string', 'default' => '' ),
-						'status'         => array( 'type' => 'string', 'default' => 'draft', 'enum' => array( 'draft', 'publish', 'pending', 'private' ) ),
-						'meta'           => array( 'type' => 'object' ),
-						'taxonomy_terms' => array( 'type' => 'object', 'description' => 'Object of taxonomy_slug => [term names or IDs]' ),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema' => array(
-					'type'       => 'object',
-					'properties' => array(
-						'post_id' => array( 'type' => 'integer' ),
-						'url'     => array( 'type' => 'string' ),
-					),
-				),
-				'callback'    => 'execute_create_post',
-				'readonly'    => false,
-				'idempotent'  => false,
-				'permission'  => self::permission_for_post_type(),
-			),
-			'wpmcp/update-post' => array(
-				'label'         => __( 'Update Post', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Updates an existing post — only fields you provide are changed, others are left untouched. Can update title, content, excerpt, status, meta, and taxonomy_terms. For surgical content edits (changing one block), prefer parse-blocks + update-block-content instead of replacing the entire content field. For ACF fields, use wpmcp-acf/update-post-fields. WARNING: Setting content replaces ALL post content — get the current content with get-post first.', 'wp-mcp-toolkit' ),
-				'category'      => 'wpmcp-content',
-				'input_schema'  => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id' ),
-					'properties' => array(
-						'post_id'        => array( 'type' => 'integer' ),
-						'title'          => array( 'type' => 'string' ),
-						'content'        => array( 'type' => 'string' ),
-						'excerpt'        => array( 'type' => 'string' ),
-						'status'         => array( 'type' => 'string', 'enum' => array( 'draft', 'publish', 'pending', 'private', 'trash' ) ),
-						'meta'           => array( 'type' => 'object' ),
-						'taxonomy_terms' => array( 'type' => 'object' ),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema' => array(
-					'type'       => 'object',
-					'properties' => array(
-						'post_id'        => array( 'type' => 'integer' ),
-						'url'            => array( 'type' => 'string' ),
-						'updated_fields' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
-					),
-				),
-				'callback'   => 'execute_update_post',
-				'readonly'   => false,
-				'permission' => self::permission_for_post( 'edit_post' ),
-			),
-			'wpmcp/delete-post' => array(
-				'label'         => __( 'Delete Post', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Moves a post to trash (recoverable) or permanently deletes it. Default behavior is trash — set force=true for permanent deletion. DESTRUCTIVE: permanent deletion cannot be undone. Returns the previous status so you can restore if needed.', 'wp-mcp-toolkit' ),
-				'category'      => 'wpmcp-content',
-				'input_schema'  => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id' ),
-					'properties' => array(
-						'post_id' => array( 'type' => 'integer' ),
-						'force'   => array(
-							'type'        => 'boolean',
-							'default'     => false,
-							'description' => __( 'If true, permanently deletes. If false (default), moves to trash.', 'wp-mcp-toolkit' ),
-						),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema' => array(
-					'type'       => 'object',
-					'properties' => array(
-						'deleted'         => array( 'type' => 'boolean' ),
-						'previous_status' => array( 'type' => 'string' ),
-					),
-				),
-				'callback'    => 'execute_delete_post',
-				'readonly'    => false,
-				'destructive' => true,
-				'idempotent'  => false,
-				'permission'  => self::permission_for_post( 'delete_post' ),
-			),
-			'wpmcp/replace-content' => array(
-				'label'         => __( 'Replace Content', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Finds and replaces text within a post\'s raw content (post_content), working at any block nesting depth. Use this for surgical text edits within nested blocks (e.g. paragraphs inside columns) where update-block-content cannot reach. Provide search_text to find and replace_text to substitute. By default replaces the first occurrence only — set replace_all=true to replace all occurrences. Works on raw block markup, so you can include HTML tags in search/replace values. Call get-post first to see the current content_raw.', 'wp-mcp-toolkit' ),
-				'category'      => 'wpmcp-content',
-				'input_schema'  => array(
-					'type'       => 'object',
-					'required'   => array( 'post_id', 'search_text', 'replace_text' ),
-					'properties' => array(
-						'post_id'      => array( 'type' => 'integer' ),
-						'search_text'  => array(
+						'post_type' => array(
 							'type'        => 'string',
-							'description' => __( 'The text to find in post content (exact match, case-sensitive).', 'wp-mcp-toolkit' ),
-						),
-						'replace_text' => array(
-							'type'        => 'string',
-							'description' => __( 'The replacement text.', 'wp-mcp-toolkit' ),
-						),
-						'replace_all'  => array(
-							'type'        => 'boolean',
-							'default'     => false,
-							'description' => __( 'If true, replaces all occurrences. Default: first occurrence only.', 'wp-mcp-toolkit' ),
+							'default'     => 'page',
+							'description' => __( 'Post type slug. Must be hierarchical (e.g. page).', 'wp-mcp-toolkit' ),
 						),
 					),
 					'additionalProperties' => false,
 				),
 				'output_schema' => array(
-					'type'       => 'object',
-					'properties' => array(
-						'success'       => array( 'type' => 'boolean' ),
-						'replacements'  => array( 'type' => 'integer' ),
+					'type'  => 'array',
+					'items' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'id'       => array( 'type' => 'integer' ),
+							'title'    => array( 'type' => 'string' ),
+							'slug'     => array( 'type' => 'string' ),
+							'status'   => array( 'type' => 'string' ),
+							'url'      => array( 'type' => 'string' ),
+							'children' => array( 'type' => 'array' ),
+						),
 					),
 				),
-				'callback'   => 'execute_replace_content',
-				'readonly'   => false,
-				'permission' => self::permission_for_post( 'edit_post' ),
+				'callback'   => 'execute_get_page_tree',
+				'permission' => 'read',
 			),
 		);
 	}
@@ -325,7 +231,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 		$post    = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$author = get_userdata( $post->post_author );
@@ -335,7 +241,7 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 		$thumb_url = $thumb_id ? wp_get_attachment_url( $thumb_id ) : '';
 
 		// Taxonomy terms.
-		$taxonomies    = get_object_taxonomies( $post->post_type );
+		$taxonomies     = get_object_taxonomies( $post->post_type );
 		$taxonomy_terms = array();
 		foreach ( $taxonomies as $tax ) {
 			$terms = wp_get_post_terms( $post_id, $tax, array( 'fields' => 'names' ) );
@@ -359,6 +265,10 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 			'title'              => $post->post_title,
 			'slug'               => $post->post_name,
 			'content_raw'        => $post->post_content,
+			// Note: apply_filters('the_content') runs ALL registered content filters including
+			// shortcodes, oEmbed, and third-party plugin filters. In an API/MCP context this
+			// may produce large output with embedded iframes/scripts or trigger side effects.
+			// The raw post_content is always available as 'content_raw' for safer processing.
 			'content_rendered'   => apply_filters( 'the_content', $post->post_content ),
 			'excerpt'            => $post->post_excerpt,
 			'status'             => $post->post_status,
@@ -374,188 +284,50 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 		);
 	}
 
-	public function execute_create_post( $input = array() ): array|\WP_Error {
-		$input = self::normalize_input( $input );
+	public function execute_get_page_tree( $input = array() ): array|\WP_Error {
+		$input     = self::normalize_input( $input );
+		$post_type = sanitize_key( $input['post_type'] ?? 'page' );
 
-		$post_data = array(
-			'post_type'    => sanitize_key( $input['post_type'] ),
-			'post_title'   => sanitize_text_field( self::decode_unicode_escapes( $input['title'] ) ),
-			'post_content' => wp_kses_post( self::decode_unicode_escapes( $input['content'] ?? '' ) ),
-			'post_excerpt' => sanitize_textarea_field( self::decode_unicode_escapes( $input['excerpt'] ?? '' ) ),
-			'post_status'  => sanitize_key( $input['status'] ?? 'draft' ),
-		);
-
-		$post_id = wp_insert_post( $post_data, true );
-
-		if ( is_wp_error( $post_id ) ) {
-			return $post_id;
+		$pt = get_post_type_object( $post_type );
+		if ( ! $pt ) {
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post type not found.', 'wp-mcp-toolkit' ) );
 		}
 
-		$this->set_post_meta( $post_id, $input );
-		$this->set_taxonomy_terms( $post_id, $input );
-
-		return array(
-			'post_id' => $post_id,
-			'url'     => get_permalink( $post_id ),
-		);
-	}
-
-	public function execute_update_post( $input = array() ): array|\WP_Error {
-		$input   = self::normalize_input( $input );
-		$post_id = absint( $input['post_id'] ?? 0 );
-		$post    = get_post( $post_id );
-
-		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
-		}
-
-		$updated_fields = array();
-		$post_data      = array( 'ID' => $post_id );
-
-		$field_map = array(
-			'title'   => 'post_title',
-			'content' => 'post_content',
-			'excerpt' => 'post_excerpt',
-			'status'  => 'post_status',
-		);
-
-		$sanitizers = array(
-			'content' => 'wp_kses_post',
-			'excerpt' => 'sanitize_textarea_field',
-		);
-
-		foreach ( $field_map as $input_key => $wp_key ) {
-			if ( isset( $input[ $input_key ] ) ) {
-				$value     = self::decode_unicode_escapes( $input[ $input_key ] );
-				$sanitizer = $sanitizers[ $input_key ] ?? 'sanitize_text_field';
-				$post_data[ $wp_key ] = $sanitizer( $value );
-				$updated_fields[] = $input_key;
-			}
-		}
-
-		if ( count( $post_data ) > 1 ) {
-			$result = wp_update_post( $post_data, true );
-			if ( is_wp_error( $result ) ) {
-				return $result;
-			}
-		}
-
-		if ( $this->set_post_meta( $post_id, $input ) ) {
-			$updated_fields[] = 'meta';
-		}
-		if ( $this->set_taxonomy_terms( $post_id, $input ) ) {
-			$updated_fields[] = 'taxonomy_terms';
-		}
-
-		return array(
-			'post_id'        => $post_id,
-			'url'            => get_permalink( $post_id ),
-			'updated_fields' => $updated_fields,
-		);
-	}
-
-	public function execute_delete_post( $input = array() ): array|\WP_Error {
-		$input   = self::normalize_input( $input );
-		$post_id = absint( $input['post_id'] ?? 0 );
-		$force   = ! empty( $input['force'] );
-		$post    = get_post( $post_id );
-
-		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
-		}
-
-		$previous_status = $post->post_status;
-		$result = $force ? wp_delete_post( $post_id, true ) : wp_trash_post( $post_id );
-
-		if ( ! $result ) {
-			return new \WP_Error( 'delete_failed', __( 'Failed to delete post.', 'wp-mcp-toolkit' ) );
-		}
-
-		return array(
-			'deleted'         => true,
-			'previous_status' => $previous_status,
-		);
-	}
-
-	public function execute_replace_content( $input = array() ): array|\WP_Error {
-		$input        = self::normalize_input( $input );
-		$post_id      = absint( $input['post_id'] ?? 0 );
-		$search_text  = $input['search_text'] ?? '';
-		$replace_text = wp_kses_post( $input['replace_text'] ?? '' );
-		$replace_all  = ! empty( $input['replace_all'] );
-		$post         = get_post( $post_id );
-
-		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
-		}
-
-		if ( empty( $search_text ) ) {
-			return new \WP_Error( 'invalid_input', __( 'search_text cannot be empty.', 'wp-mcp-toolkit' ) );
-		}
-
-		$replace_text = self::decode_unicode_escapes( $replace_text );
-		$content      = $post->post_content;
-
-		if ( false === strpos( $content, $search_text ) ) {
-			return new \WP_Error( 'not_found', __( 'search_text not found in post content.', 'wp-mcp-toolkit' ) );
-		}
-
-		if ( $replace_all ) {
-			$count   = substr_count( $content, $search_text );
-			$content = str_replace( $search_text, $replace_text, $content );
-		} else {
-			$pos = strpos( $content, $search_text );
-			$content = substr_replace( $content, $replace_text, $pos, strlen( $search_text ) );
-			$count = 1;
-		}
-
-		$result = wp_update_post(
+		$posts = get_posts(
 			array(
-				'ID'           => $post_id,
-				'post_content' => $content,
-			),
-			true
+				'post_type'      => $post_type,
+				'post_status'    => array( 'publish', 'draft', 'private' ),
+				'posts_per_page' => -1,
+				'orderby'        => 'menu_order',
+				'order'          => 'ASC',
+			)
 		);
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
+		$nodes = array();
+		foreach ( $posts as $post ) {
+			$nodes[ $post->ID ] = array(
+				'id'       => $post->ID,
+				'title'    => $post->post_title,
+				'slug'     => $post->post_name,
+				'status'   => $post->post_status,
+				'url'      => get_permalink( $post->ID ),
+				'parent'   => $post->post_parent,
+				'children' => array(),
+			);
 		}
 
-		return array(
-			'success'      => true,
-			'replacements' => $count,
-		);
-	}
-
-	/**
-	 * Sets post meta from input if present. Returns true if any meta was set.
-	 */
-	private function set_post_meta( int $post_id, array $input ): bool {
-		if ( empty( $input['meta'] ) || ! is_array( $input['meta'] ) ) {
-			return false;
-		}
-		foreach ( $input['meta'] as $key => $value ) {
-			$key = sanitize_key( $key );
-			if ( is_string( $value ) ) {
-				$value = sanitize_text_field( $value );
-			} elseif ( is_array( $value ) ) {
-				$value = array_map( 'sanitize_text_field', $value );
+		$tree = array();
+		foreach ( $nodes as $id => &$node ) {
+			$parent_id = $node['parent'];
+			unset( $node['parent'] );
+			if ( $parent_id && isset( $nodes[ $parent_id ] ) ) {
+				$nodes[ $parent_id ]['children'][] = &$node;
+			} else {
+				$tree[] = &$node;
 			}
-			update_post_meta( $post_id, $key, $value );
 		}
-		return true;
-	}
+		unset( $node );
 
-	/**
-	 * Sets taxonomy terms from input if present. Returns true if any terms were set.
-	 */
-	private function set_taxonomy_terms( int $post_id, array $input ): bool {
-		if ( empty( $input['taxonomy_terms'] ) || ! is_array( $input['taxonomy_terms'] ) ) {
-			return false;
-		}
-		foreach ( $input['taxonomy_terms'] as $taxonomy => $terms ) {
-			wp_set_object_terms( $post_id, $terms, sanitize_key( $taxonomy ) );
-		}
-		return true;
+		return $tree;
 	}
 }

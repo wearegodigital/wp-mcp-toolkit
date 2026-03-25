@@ -127,7 +127,7 @@ class WP_MCP_Toolkit_Yoast_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		$post    = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		return array(
@@ -153,7 +153,7 @@ class WP_MCP_Toolkit_Yoast_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		$post    = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$field_map = array(
@@ -168,10 +168,11 @@ class WP_MCP_Toolkit_Yoast_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		);
 
 		$updated_fields = array();
+		$url_fields     = array( 'canonical_url', 'og_image' );
 
 		foreach ( $field_map as $input_key => $meta_key ) {
 			if ( isset( $input[ $input_key ] ) ) {
-				$value = sanitize_text_field( $input[ $input_key ] );
+				$value = in_array( $input_key, $url_fields, true ) ? esc_url_raw( $input[ $input_key ] ) : sanitize_text_field( $input[ $input_key ] );
 				update_post_meta( $post_id, $meta_key, $value );
 				$updated_fields[] = $input_key;
 			}

@@ -86,7 +86,7 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		$post    = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$blocks = parse_blocks( $post->post_content );
@@ -129,21 +129,21 @@ class WP_MCP_Toolkit_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		$post        = get_post( $post_id );
 
 		if ( ! $post ) {
-			return new \WP_Error( 'not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_not_found', __( 'Post not found.', 'wp-mcp-toolkit' ) );
 		}
 
 		$blocks       = parse_blocks( $post->post_content );
 		$target_index = $this->resolve_target_index( $blocks, $input );
 
 		if ( null === $target_index ) {
-			return new \WP_Error( 'block_not_found', __( 'Could not find the target block.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_block_not_found', __( 'Could not find the target block.', 'wp-mcp-toolkit' ) );
 		}
 
 		// Map flat index back to actual blocks array index (skipping empty blocks).
 		$real_idx = $this->flat_to_real_index( $blocks, $target_index );
 
 		if ( null === $real_idx || ! isset( $blocks[ $real_idx ] ) ) {
-			return new \WP_Error( 'block_not_found', __( 'Block index out of range.', 'wp-mcp-toolkit' ) );
+			return new \WP_Error( 'wpmcp_block_not_found', __( 'Block index out of range.', 'wp-mcp-toolkit' ) );
 		}
 
 		$block_name = $blocks[ $real_idx ]['blockName'] ?? '';
