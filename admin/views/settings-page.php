@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit();
 
 $active_tab = $active_tab ?? 'connection';
-$valid_tabs = array( 'connection', 'addons', 'abilities', 'templates' );
+$valid_tabs = array( 'connection', 'addons', 'abilities', 'templates', 'workspace' );
 if ( ! in_array( $active_tab, $valid_tabs, true ) ) {
 	$active_tab = 'connection';
 }
@@ -32,6 +32,9 @@ if ( ! in_array( $active_tab, $valid_tabs, true ) ) {
 		</a>
 		<a href="?page=wp-mcp-toolkit&tab=templates" class="nav-tab <?php echo 'templates' === $active_tab ? 'nav-tab-active' : ''; ?>">
 			<?php esc_html_e( 'Templates', 'wp-mcp-toolkit' ); ?>
+		</a>
+		<a href="?page=wp-mcp-toolkit&tab=workspace" class="nav-tab <?php echo 'workspace' === $active_tab ? 'nav-tab-active' : ''; ?>">
+			<?php esc_html_e( 'Workspace', 'wp-mcp-toolkit' ); ?>
 		</a>
 	</nav>
 
