@@ -10,6 +10,8 @@ defined( 'ABSPATH' ) || exit;
 
 class WP_MCP_Toolkit_Workspace_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 
+	use WP_MCP_Toolkit_Workspace_Helpers;
+
 	protected function get_abilities(): array {
 		$c = 'wpmcp-workspace';
 		$p = 'manage_options';
@@ -89,31 +91,6 @@ class WP_MCP_Toolkit_Workspace_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 				'output_schema' => $o( [ 'deleted' => [ 'type' => 'string' ], 'remaining' => [ 'type' => 'integer' ] ] ),
 			] + $w( 'execute_delete_workspace_artifact', false, true, true ),
 		];
-	}
-
-	private function ensure_workspace(): true|\WP_Error {
-		if ( WP_MCP_Toolkit_Workspace_Container::is_initialized() ) {
-			return true;
-		}
-		return WP_MCP_Toolkit_Workspace_Container::initialize_workspace();
-	}
-
-	private function save_artifact( string $name, string $type, string $file, string $ability ): true|\WP_Error {
-		$result = WP_MCP_Toolkit_Workspace_Manifest::add_artifact( [
-			'name' => $name, 'type' => $type, 'file' => $file, 'source_ability' => $ability,
-		] );
-		if ( is_wp_error( $result ) ) {
-			if ( 'wpmcp_duplicate_artifact' === $result->get_error_code() ) {
-				$update = WP_MCP_Toolkit_Workspace_Manifest::update_artifact( $name, [ 'file' => $file ] );
-				if ( is_wp_error( $update ) ) {
-					return $update;
-				}
-			} else {
-				return $result;
-			}
-		}
-		WP_MCP_Toolkit_Workspace_Container::reinitialize();
-		return true;
 	}
 
 	// -- Execute methods ------------------------------------------------------
@@ -222,6 +199,11 @@ class WP_MCP_Toolkit_Workspace_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		$callback      = sanitize_text_field( $input['callback_function'] ?? '' );
 		$priority      = absint( $input['priority'] ?? 10 );
 		$accepted_args = absint( $input['accepted_args'] ?? 1 );
+
+		// Validate callback is not a blocked function.
+		if ( in_array( $callback, WP_MCP_Toolkit_Workspace_Validator::get_blocklist(), true ) ) {
+			return new \WP_Error( 'wpmcp_blocked_function', "Function '{$callback}' is blocked for security reasons." );
+		}
 
 		$php = "<?php\nadd_{$hook_type}( '{$hook_name}', '{$callback}', {$priority}, {$accepted_args} );\n";
 		$syntax = WP_MCP_Toolkit_Workspace_Validator::validate_php_syntax( $php );

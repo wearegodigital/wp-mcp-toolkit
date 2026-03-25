@@ -27,8 +27,8 @@ class {{ELEMENT_CLASS}} extends \Bricks\Element {
 	}
 
 	public function render(): void {
-		$root_attributes = $this->set_root_attributes();
-		echo "<div {$root_attributes}>";
+		$this->set_root_attributes();
+		echo "<div {$this->render_attributes( '_root' )}>";
 		{{ELEMENT_RENDER}}
 		echo '</div>';
 	}

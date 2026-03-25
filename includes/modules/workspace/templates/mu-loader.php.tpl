@@ -20,8 +20,14 @@ if ( ! file_exists( $wpmcp_workspace_plugin ) ) {
 }
 
 $wpmcp_workspace_dir = dirname( $wpmcp_workspace_plugin ) . '/';
+$wpmcp_ready_file    = $wpmcp_workspace_dir . '.ready';
 $wpmcp_loading_file  = $wpmcp_workspace_dir . '.loading';
 $wpmcp_crashed_file  = $wpmcp_workspace_dir . '.crashed';
+
+// Don't load until workspace initialization is complete.
+if ( ! file_exists( $wpmcp_ready_file ) ) {
+	return;
+}
 
 // Detect crash: .loading persisting from previous request means a fatal occurred.
 if ( file_exists( $wpmcp_loading_file ) ) {

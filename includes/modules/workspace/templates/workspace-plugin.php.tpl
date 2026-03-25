@@ -37,11 +37,14 @@ add_action( 'init', function () {
 	}
 } );
 
-// Register generated Bricks elements — guarded to prevent fatal if Bricks is deactivated.
-if ( class_exists( '\Bricks\Elements' ) ) {
+// Register generated Bricks elements — deferred to after_setup_theme so Bricks is loaded.
+add_action( 'after_setup_theme', function () {
+	if ( ! class_exists( '\Bricks\Elements' ) || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+		return;
+	}
 	add_action( 'init', function () {
 		foreach ( glob( WPMCP_WORKSPACE_DIR . 'bricks/*/element.php' ) as $element_file ) {
-			require_once $element_file;
+			\Bricks\Elements::register_element( $element_file );
 		}
-	}, 11 );
-}
+	}, 9 );
+}, 20 );

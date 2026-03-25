@@ -189,20 +189,24 @@ class WP_MCP_Toolkit_Workspace_Container {
 			return $mu_result;
 		}
 
+		// Signal that initialization is complete.
+		file_put_contents( self::get_active_dir() . '.ready', gmdate( 'c' ), LOCK_EX ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+
 		return true;
 	}
 
 	/**
-	 * Returns whether the workspace has been initialised.
+	 * Returns whether the workspace has been fully initialised.
 	 *
-	 * Presence of the bootstrap file is the canonical signal — all other
-	 * structure (subdirs, manifest, MU-plugin) is created alongside it.
+	 * Presence of the .ready marker is the canonical signal — it is written
+	 * as the very last step of initialize_workspace(), so its absence means
+	 * setup either never ran or was interrupted mid-flight.
 	 *
 	 * @since 2.0.0
 	 * @return bool
 	 */
 	public static function is_initialized(): bool {
-		return file_exists( self::get_active_dir() . 'wpmcp-workspace.php' );
+		return file_exists( self::get_active_dir() . '.ready' );
 	}
 
 	/**
@@ -210,12 +214,27 @@ class WP_MCP_Toolkit_Workspace_Container {
 	 *
 	 * Useful after a plugin version bump or template change where the
 	 * bootstrap needs refreshing but workspace content must be preserved.
+	 * Removes .ready before work and re-writes it on success so the MU-loader
+	 * never sees a half-regenerated workspace as fully ready.
 	 *
 	 * @since 2.0.0
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
 	public static function reinitialize(): true|\WP_Error {
-		return self::write_bootstrap();
+		$ready_file = self::get_active_dir() . '.ready';
+
+		// Clear the ready marker so the MU-loader gates out during regeneration.
+		@unlink( $ready_file ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+		$result = self::write_bootstrap();
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		// Restore the ready marker now that regeneration is complete.
+		file_put_contents( $ready_file, gmdate( 'c' ), LOCK_EX ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
