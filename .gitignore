@@ -5,6 +5,11 @@ node_modules/
 .phpunit.result.cache
 .phpcs-cache
 
+# OMC development artifacts
+.omc/audit.db
+.omc/ralplan-state.json
+.omc/state/
+
 # Playwright
 tests/playwright/results/
 tests/playwright/snapshots/

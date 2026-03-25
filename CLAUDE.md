@@ -72,6 +72,76 @@ docker exec devkinsta_fpm wp eval "echo count(wp_get_abilities());" --path=/www/
 - Upstream `Plugin.php` should NOT be modified to avoid merge conflicts with the official MCP Adapter
 - PII fields (`ip`, `user_agent`, `source_url`) must be filtered from Gravity Forms entry responses
 
+## Development Process
+
+Full dev process: `docs/plans/dev-process.md`. Summary below.
+
+### Phase Lifecycle
+
+Every development phase follows this sequence:
+
+```
+1. PLAN         Read phase objectives. Break into atomic tasks.
+2. EXECUTE      Implement tasks. Per-task: implement → php -l → verify ability count.
+3. VERIFY       Mandatory before "done": php -l on all changed files + WP-CLI ability count.
+4. SIMPLIFY     Run code-simplifier on all changed files. Re-verify after changes.
+5. DOCUMENT     Generate phase summary to docs/phases/{phase-name}.md.
+6. AUDIT        Log completed task to .omc/audit.db via audit script.
+7. REVIEW       Sean reads phase documentation. Feedback before next phase.
+8. COMMIT       Atomic commit per phase. Descriptive conventional commit message.
+9. NEXT PHASE   Begin from step 1.
+```
+
+### Hard Rules — Simplicity First
+
+- Write the simplest code that solves the current problem. Not the hypothetical future problem.
+- Prefer 2 lines over 40. No defensive code for cases that don't exist yet.
+- No abstraction before the third use. Write the specific thing, refactor when pattern emerges.
+- Comments explain WHY, not WHAT. The code explains what.
+- No barrel files. No "framework" code. Use WordPress APIs directly.
+
+### File Size Limits
+
+- Ability files: 400 lines max. If approaching, split by domain.
+- Infrastructure files: 300 lines max. Split into modules.
+- Admin view files: 300 lines max. Extract sections.
+- These are hard limits. Split before continuing if exceeded.
+
+### DRY
+
+- One function, one place. If used in multiple files, extract to shared module.
+- No copy-paste across files. Extract and import.
+- If a pattern appears 3+ times, extract to the abstract base class.
+
+### Before Claiming "Done" (MANDATORY)
+
+Before marking ANY task complete, you MUST:
+
+1. PHP syntax check on all modified files: `docker exec devkinsta_fpm php -l <file>`
+2. Verify ability count: `docker exec devkinsta_fpm wp eval "echo count(wp_get_abilities());" --path=/www/kinsta/public/generatormedia/ --allow-root --user=1`
+3. If either fails, fix before claiming completion. No exceptions.
+
+### Audit Log
+
+After completing any task, log to `.omc/audit.db` (SQLite):
+
+```bash
+docker exec devkinsta_fpm php /www/kinsta/public/generatormedia/wp-content/plugins/wp-mcp-toolkit/.omc/audit.php log \
+  --phase "workspace-1" \
+  --task "Create workspace container class" \
+  --action "implemented" \
+  --files "includes/modules/workspace/class-workspace-container.php" \
+  --status "completed" \
+  --description "Container class with path resolution and writable detection"
+```
+
+If a task fails, log with `--status failed` and `--retry-context "what went wrong"`.
+
+## Plans
+
+- Workspace module: `docs/plans/workspace-module.md`
+- Dev process: `docs/plans/dev-process.md`
+
 ## Release Checklist
 
 Run this checklist before every version bump:
