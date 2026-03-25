@@ -48,10 +48,12 @@ class WP_MCP_Toolkit_Workspace_Addon implements WP_MCP_Toolkit_Addon {
 
 	public function register_categories(): void {
 		wp_register_ability_category( 'wpmcp-workspace', array(
-			'label' => __( 'Workspace', 'wp-mcp-toolkit' ),
+			'label'       => __( 'Workspace', 'wp-mcp-toolkit' ),
+			'description' => __( 'Abilities for generating PHP code and managing workspace artifacts.', 'wp-mcp-toolkit' ),
 		) );
 		wp_register_ability_category( 'wpmcp-workspace-blocks', array(
-			'label' => __( 'Workspace Blocks', 'wp-mcp-toolkit' ),
+			'label'       => __( 'Workspace Blocks', 'wp-mcp-toolkit' ),
+			'description' => __( 'Abilities for scaffolding and managing Gutenberg blocks in the workspace.', 'wp-mcp-toolkit' ),
 		) );
 	}
 

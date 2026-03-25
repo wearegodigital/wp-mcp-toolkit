@@ -10,9 +10,9 @@
  * @wordpress-plugin
  * Plugin Name:       WP MCP Toolkit
  * Plugin URI:        https://github.com/wearegodigital/wp-mcp-toolkit
- * Description:       Comprehensive MCP toolkit for WordPress — content CRUD, block editing, media, taxonomies, ACF, Gravity Forms, Yoast SEO, and content templates. Built on the official MCP Adapter.
+ * Description:       Comprehensive MCP toolkit for WordPress — content CRUD, block editing, media, taxonomies, ACF, Gravity Forms, Yoast SEO, content templates, workspace code generation, and Bricks Builder element scaffolding. Built on the official MCP Adapter.
  * Requires at least: 6.9
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires PHP:      8.1
  * Author:            Sean Wilkinson
  * Author URI:        https://seanwilkinson.com
@@ -33,7 +33,7 @@ defined( 'ABSPATH' ) || exit();
  */
 function constants(): void {
 	define( 'WP_MCP_DIR', plugin_dir_path( __FILE__ ) );
-	define( 'WP_MCP_VERSION', '1.0.0' );
+	define( 'WP_MCP_VERSION', '1.0.1' );
 }
 
 constants();

@@ -123,38 +123,6 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 				'callback'   => 'execute_get_post',
 				'permission' => self::permission_for_post( 'read_post' ),
 			),
-			'wpmcp/get-page-tree' => array(
-				'label'         => __( 'Get Page Tree', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Returns a hierarchical tree of all pages (or any hierarchical post type), showing parent-child relationships. Useful for understanding site structure before creating or updating pages. Each node includes id, title, slug, status, and url.', 'wp-mcp-toolkit' ),
-				'category'      => 'wpmcp-content',
-				'input_schema'  => array(
-					'type'       => 'object',
-					'properties' => array(
-						'post_type' => array(
-							'type'        => 'string',
-							'default'     => 'page',
-							'description' => __( 'Post type slug. Must be hierarchical (e.g. page).', 'wp-mcp-toolkit' ),
-						),
-					),
-					'additionalProperties' => false,
-				),
-				'output_schema' => array(
-					'type'  => 'array',
-					'items' => array(
-						'type'       => 'object',
-						'properties' => array(
-							'id'       => array( 'type' => 'integer' ),
-							'title'    => array( 'type' => 'string' ),
-							'slug'     => array( 'type' => 'string' ),
-							'status'   => array( 'type' => 'string' ),
-							'url'      => array( 'type' => 'string' ),
-							'children' => array( 'type' => 'array' ),
-						),
-					),
-				),
-				'callback'   => 'execute_get_page_tree',
-				'permission' => 'read',
-			),
 		);
 	}
 
@@ -284,50 +252,4 @@ class WP_MCP_Toolkit_Content_Abilities extends WP_MCP_Toolkit_Abstract_Abilities
 		);
 	}
 
-	public function execute_get_page_tree( $input = array() ): array|\WP_Error {
-		$input     = self::normalize_input( $input );
-		$post_type = sanitize_key( $input['post_type'] ?? 'page' );
-
-		$pt = get_post_type_object( $post_type );
-		if ( ! $pt ) {
-			return new \WP_Error( 'wpmcp_not_found', __( 'Post type not found.', 'wp-mcp-toolkit' ) );
-		}
-
-		$posts = get_posts(
-			array(
-				'post_type'      => $post_type,
-				'post_status'    => array( 'publish', 'draft', 'private' ),
-				'posts_per_page' => -1,
-				'orderby'        => 'menu_order',
-				'order'          => 'ASC',
-			)
-		);
-
-		$nodes = array();
-		foreach ( $posts as $post ) {
-			$nodes[ $post->ID ] = array(
-				'id'       => $post->ID,
-				'title'    => $post->post_title,
-				'slug'     => $post->post_name,
-				'status'   => $post->post_status,
-				'url'      => get_permalink( $post->ID ),
-				'parent'   => $post->post_parent,
-				'children' => array(),
-			);
-		}
-
-		$tree = array();
-		foreach ( $nodes as $id => &$node ) {
-			$parent_id = $node['parent'];
-			unset( $node['parent'] );
-			if ( $parent_id && isset( $nodes[ $parent_id ] ) ) {
-				$nodes[ $parent_id ]['children'][] = &$node;
-			} else {
-				$tree[] = &$node;
-			}
-		}
-		unset( $node );
-
-		return $tree;
-	}
 }

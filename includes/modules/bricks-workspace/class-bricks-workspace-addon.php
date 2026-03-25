@@ -48,7 +48,8 @@ class WP_MCP_Toolkit_Bricks_Workspace_Addon implements WP_MCP_Toolkit_Addon {
 
 	public function register_categories(): void {
 		wp_register_ability_category( 'wpmcp-bricks', array(
-			'label' => __( 'Bricks Workspace', 'wp-mcp-toolkit' ),
+			'label'       => __( 'Bricks Workspace', 'wp-mcp-toolkit' ),
+			'description' => __( 'Abilities for scaffolding and managing Bricks Builder elements.', 'wp-mcp-toolkit' ),
 		) );
 	}
 
