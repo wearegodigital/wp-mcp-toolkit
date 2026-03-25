@@ -36,12 +36,9 @@ class WP_MCP_Toolkit_GF_Addon implements WP_MCP_Toolkit_Addon {
 	public function is_licensed(): bool {
 		$licenses = get_option( 'wpmcp_licenses', array() );
 		$key = $licenses[ $this->get_slug() ] ?? '';
-		if ( empty( $key ) ) {
-			return false;
-		}
-		// TODO: Validate against LemonSqueezy API.
-		// Stub: any non-empty key is treated as valid.
-		return true;
+		// Basic format check — must be at least 8 chars, alphanumeric + hyphens only.
+		// Full LemonSqueezy API validation to be added before public release.
+		return (bool) preg_match( '/^[a-zA-Z0-9\-]{8,}$/', $key );
 	}
 
 	public function get_version(): string {
@@ -49,7 +46,7 @@ class WP_MCP_Toolkit_GF_Addon implements WP_MCP_Toolkit_Addon {
 	}
 
 	public function get_ability_count(): int {
-		return 5;
+		return 5; // list-forms, get-form, list-entries, get-entry, create-entry.
 	}
 
 	public function register_categories(): void {
@@ -61,6 +58,6 @@ class WP_MCP_Toolkit_GF_Addon implements WP_MCP_Toolkit_Addon {
 
 	public function register_abilities( array $disabled ): void {
 		require_once __DIR__ . '/class-gf-module.php';
-		WP_MCP_Toolkit_GF_Module::init();
+		WP_MCP_Toolkit_GF_Module::init( $disabled );
 	}
 }

@@ -13,12 +13,10 @@ class WP_MCP_Toolkit_ACF_Module {
 		return class_exists( 'ACF' );
 	}
 
-	public static function init(): void {
+	public static function init( array $disabled = array() ): void {
 		if ( ! self::is_active() ) {
 			return;
 		}
-
-		$disabled = get_option( 'wpmcp_disabled_abilities', array() );
 
 		require_once __DIR__ . '/class-acf-field-abilities.php';
 		( new WP_MCP_Toolkit_ACF_Field_Abilities() )->register( $disabled );

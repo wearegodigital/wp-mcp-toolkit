@@ -13,12 +13,10 @@ class WP_MCP_Toolkit_GF_Module {
 		return class_exists( 'GFAPI' );
 	}
 
-	public static function init(): void {
+	public static function init( array $disabled = array() ): void {
 		if ( ! self::is_active() ) {
 			return;
 		}
-
-		$disabled = get_option( 'wpmcp_disabled_abilities', array() );
 
 		require_once __DIR__ . '/class-gf-abilities.php';
 		( new WP_MCP_Toolkit_GF_Abilities() )->register( $disabled );

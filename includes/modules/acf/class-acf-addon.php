@@ -42,7 +42,7 @@ class WP_MCP_Toolkit_ACF_Addon implements WP_MCP_Toolkit_Addon {
 	}
 
 	public function get_ability_count(): int {
-		return 7;
+		return 7; // 4 field abilities (list-field-groups, get-field-group, get-post-fields, update-post-fields) + 3 block abilities (list-acf-blocks, get-block-fields, update-block-fields).
 	}
 
 	public function register_categories(): void {
@@ -54,6 +54,6 @@ class WP_MCP_Toolkit_ACF_Addon implements WP_MCP_Toolkit_Addon {
 
 	public function register_abilities( array $disabled ): void {
 		require_once __DIR__ . '/class-acf-module.php';
-		WP_MCP_Toolkit_ACF_Module::init();
+		WP_MCP_Toolkit_ACF_Module::init( $disabled );
 	}
 }
