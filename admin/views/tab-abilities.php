@@ -40,6 +40,9 @@ $category_labels = array(
 	'wpmcp-gf'         => __( 'Gravity Forms', 'wp-mcp-toolkit' ),
 	'wpmcp-yoast'      => __( 'Yoast SEO', 'wp-mcp-toolkit' ),
 	'wpmcp-templates'  => __( 'Content Templates', 'wp-mcp-toolkit' ),
+	'wpmcp-workspace'        => __( 'Workspace', 'wp-mcp-toolkit' ),
+	'wpmcp-workspace-blocks' => __( 'Workspace Blocks', 'wp-mcp-toolkit' ),
+	'wpmcp-bricks'           => __( 'Bricks Workspace', 'wp-mcp-toolkit' ),
 );
 ?>
 

@@ -43,6 +43,14 @@ final class WP_MCP_Toolkit {
 		require_once __DIR__ . '/modules/yoast/class-yoast-addon.php';
 		$registry->register( new WP_MCP_Toolkit_Yoast_Addon() );
 
+		// Workspace module.
+		require_once __DIR__ . '/modules/workspace/class-workspace-addon.php';
+		$registry->register( new WP_MCP_Toolkit_Workspace_Addon() );
+
+		// Bricks Workspace module.
+		require_once __DIR__ . '/modules/bricks-workspace/class-bricks-workspace-addon.php';
+		$registry->register( new WP_MCP_Toolkit_Bricks_Workspace_Addon() );
+
 		/**
 		 * Allow third-party plugins to register their own add-ons.
 		 *

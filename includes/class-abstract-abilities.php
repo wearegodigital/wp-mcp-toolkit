@@ -62,6 +62,22 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 		'wpmcp/list-content-templates' => 'List Templates',
 		'wpmcp/get-content-template'   => 'Get Template',
 		'wpmcp/create-from-template'   => 'Create from Template',
+		// Workspace.
+		'wpmcp-workspace/generate-function'          => 'Generate Function',
+		'wpmcp-workspace/generate-class'             => 'Generate Class',
+		'wpmcp-workspace/register-hook'              => 'Register Hook',
+		'wpmcp-workspace/call-wp-api'                => 'Call WP API',
+		'wpmcp-workspace/list-workspace'             => 'List Workspace',
+		'wpmcp-workspace/read-workspace-file'        => 'Read Workspace File',
+		'wpmcp-workspace/delete-workspace-artifact'  => 'Delete Artifact',
+		// Workspace — Blocks.
+		'wpmcp-workspace/scaffold-block'             => 'Scaffold Block',
+		'wpmcp-workspace/update-block'               => 'Update Block',
+		'wpmcp-workspace/list-workspace-blocks'      => 'List Workspace Blocks',
+		// Bricks Workspace.
+		'wpmcp-bricks/scaffold-bricks-element'       => 'Scaffold Bricks Element',
+		'wpmcp-bricks/update-bricks-element'         => 'Update Bricks Element',
+		'wpmcp-bricks/list-bricks-elements'          => 'List Bricks Elements',
 	);
 
 	/**
