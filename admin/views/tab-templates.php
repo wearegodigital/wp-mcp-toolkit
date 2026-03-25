@@ -7,28 +7,20 @@
 
 defined( 'ABSPATH' ) || exit();
 
-// Handle template extraction form submission.
-if ( isset( $_POST['wpmcp_extract_template'] ) && check_admin_referer( 'wpmcp_extract_template' ) ) {
-	$ref_post_type = sanitize_key( $_POST['wpmcp_template_post_type'] ?? '' );
-	$ref_post_id   = absint( $_POST['wpmcp_template_reference_post'] ?? 0 );
-
-	if ( $ref_post_type && $ref_post_id ) {
-		require_once dirname( __DIR__, 2 ) . '/includes/class-template-engine.php';
-		$template = WP_MCP_Toolkit_Template_Engine::extract_template( $ref_post_id );
-
-		if ( is_wp_error( $template ) ) {
-			echo '<div class="notice notice-error"><p>' . esc_html( $template->get_error_message() ) . '</p></div>';
-		} else {
-			WP_MCP_Toolkit_Template_Engine::save_template( $ref_post_type, $template );
-			echo '<div class="notice notice-success"><p>';
-			printf(
-				esc_html__( 'Template extracted: %d sections, %d placeholders.', 'wp-mcp-toolkit' ),
-				count( $template['sections'] ),
-				count( $template['placeholders'] )
-			);
-			echo '</p></div>';
-		}
-	}
+// Display redirect notices from template extraction.
+$wpmcp_notice = isset( $_GET['wpmcp_notice'] ) ? sanitize_key( $_GET['wpmcp_notice'] ) : '';
+if ( 'success' === $wpmcp_notice ) {
+	$sections      = absint( $_GET['wpmcp_sections'] ?? 0 );
+	$placeholders  = absint( $_GET['wpmcp_placeholders'] ?? 0 );
+	echo '<div class="notice notice-success"><p>';
+	printf(
+		esc_html__( 'Template extracted: %d sections, %d placeholders.', 'wp-mcp-toolkit' ),
+		$sections,
+		$placeholders
+	);
+	echo '</p></div>';
+} elseif ( 'error' === $wpmcp_notice && isset( $_GET['wpmcp_message'] ) ) {
+	echo '<div class="notice notice-error"><p>' . esc_html( sanitize_text_field( wp_unslash( $_GET['wpmcp_message'] ) ) ) . '</p></div>';
 }
 
 $post_types = get_post_types( array( 'public' => true ), 'objects' );

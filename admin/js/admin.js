@@ -16,14 +16,14 @@
 				var $tmp = $('<textarea>').val(text).appendTo('body').select();
 				document.execCommand('copy');
 				$tmp.remove();
-				$btn.text('Copied!');
-				setTimeout(function () { $btn.text('Copy'); }, 2000);
+				$btn.text(wmcpAdmin.strings.copied);
+				setTimeout(function () { $btn.text(wmcpAdmin.strings.copy); }, 2000);
 				return;
 			}
 
 			navigator.clipboard.writeText(text).then(function () {
 				var original = $btn.text();
-				$btn.text('Copied!');
+				$btn.text(wmcpAdmin.strings.copied);
 				setTimeout(function () { $btn.text(original); }, 2000);
 			});
 		});
@@ -36,7 +36,7 @@
 
 		if ($.fn.select2) {
 			$('#wpmcp_template_reference_post').select2({
-				placeholder: 'Search for a post…',
+				placeholder: wmcpAdmin.strings.searchPlaceholder,
 				allowClear: true,
 				minimumInputLength: 1,
 				ajax: {
@@ -80,12 +80,12 @@
 			var postType = $(this).data('post-type');
 			if (!postType) return;
 
-			if (!window.confirm('Delete the template for "' + postType + '"? This cannot be undone.')) {
+			if (!window.confirm(wmcpAdmin.strings.confirmDeleteTpl.replace('%s', postType))) {
 				return;
 			}
 
 			var $btn = $(this);
-			$btn.prop('disabled', true).text('Deleting…');
+			$btn.prop('disabled', true).text(wmcpAdmin.strings.deleting);
 
 			$.post(wmcpAdmin.ajaxUrl, {
 				action: 'wpmcp_delete_template',
@@ -95,12 +95,12 @@
 				if (response.success) {
 					$btn.closest('tr').fadeOut(300, function () { $(this).remove(); });
 				} else {
-					alert('Error deleting template.');
-					$btn.prop('disabled', false).text('Delete');
+					alert(wmcpAdmin.strings.errorDeleting);
+					$btn.prop('disabled', false).text(wmcpAdmin.strings.delete);
 				}
 			}).fail(function () {
-				alert('Request failed. Please try again.');
-				$btn.prop('disabled', false).text('Delete');
+				alert(wmcpAdmin.strings.requestFailed);
+				$btn.prop('disabled', false).text(wmcpAdmin.strings.delete);
 			});
 		});
 
@@ -112,7 +112,7 @@
 			var licenseKey = $wrapper.find('.wpmcp-license-key').val().trim();
 			var $btn = $(this);
 
-			$btn.prop('disabled', true).text('Saving…');
+			$btn.prop('disabled', true).text(wmcpAdmin.strings.saving);
 
 			$.post(wmcpAdmin.ajaxUrl, {
 				action: 'wpmcp_save_license',
@@ -121,17 +121,17 @@
 				license_key: licenseKey,
 			}).done(function (response) {
 				if (response.success) {
-					$btn.text(licenseKey ? 'Update' : 'Activate');
+					$btn.text(licenseKey ? wmcpAdmin.strings.update : wmcpAdmin.strings.activate);
 					// Flash success state
 					$btn.addClass('wpmcp-btn-success');
 					setTimeout(function () { $btn.removeClass('wpmcp-btn-success'); }, 2000);
 				} else {
-					alert('Error saving license.');
-					$btn.text(licenseKey ? 'Update' : 'Activate');
+					alert(wmcpAdmin.strings.errorSavingLicense);
+					$btn.text(licenseKey ? wmcpAdmin.strings.update : wmcpAdmin.strings.activate);
 				}
 			}).fail(function () {
-				alert('Request failed. Please try again.');
-				$btn.text(licenseKey ? 'Update' : 'Activate');
+				alert(wmcpAdmin.strings.requestFailed);
+				$btn.text(licenseKey ? wmcpAdmin.strings.update : wmcpAdmin.strings.activate);
 			}).always(function () {
 				$btn.prop('disabled', false);
 			});
@@ -157,18 +157,18 @@
 					// Update status badge.
 					var $statusBadge = $card.find('.wpmcp-addon-footer .wpmcp-badge').first();
 					if (enabled) {
-						$statusBadge.removeClass('wpmcp-badge-inactive').addClass('wpmcp-badge-active').text('Enabled');
+						$statusBadge.removeClass('wpmcp-badge-inactive').addClass('wpmcp-badge-active').text(wmcpAdmin.strings.enabled);
 					} else {
-						$statusBadge.removeClass('wpmcp-badge-active').addClass('wpmcp-badge-inactive').text('Disabled');
+						$statusBadge.removeClass('wpmcp-badge-active').addClass('wpmcp-badge-inactive').text(wmcpAdmin.strings.disabled);
 					}
 				} else {
 					// Revert on failure.
 					$checkbox.prop('checked', !enabled);
-					alert('Error toggling add-on.');
+					alert(wmcpAdmin.strings.errorTogglingAddon);
 				}
 			}).fail(function () {
 				$checkbox.prop('checked', !enabled);
-				alert('Request failed. Please try again.');
+				alert(wmcpAdmin.strings.requestFailed);
 			});
 		});
 

@@ -222,7 +222,7 @@ class WP_MCP_Toolkit_Media_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 		$parent_post_id = absint( $input['post_id'] ?? 0 );
 
 		// Sideload the file — returns the attachment ID.
-		$attachment_id = media_sideload_image( $url, $parent_post_id, $input['title'] ?? null, 'id' );
+		$attachment_id = media_sideload_image( $url, $parent_post_id, isset( $input['title'] ) ? sanitize_text_field( $input['title'] ) : null, 'id' );
 
 		if ( is_wp_error( $attachment_id ) ) {
 			return $attachment_id;

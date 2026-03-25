@@ -61,11 +61,7 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 					),
 				),
 				'callback'   => 'execute_get_block_fields',
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'read_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'read_post' ),
 			),
 			'wpmcp-acf/update-block-fields' => array(
 				'label'         => __( 'Update ACF Block Fields', 'wp-mcp-toolkit' ),
@@ -95,11 +91,7 @@ class WP_MCP_Toolkit_ACF_Block_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 				),
 				'callback'   => 'execute_update_block_fields',
 				'readonly'   => false,
-				'permission' => static function ( $input ): bool {
-					$input   = is_array( $input ) ? $input : (array) $input;
-					$post_id = absint( $input['post_id'] ?? 0 );
-					return current_user_can( 'edit_post', $post_id );
-				},
+				'permission' => self::permission_for_post( 'edit_post' ),
 			),
 		);
 	}

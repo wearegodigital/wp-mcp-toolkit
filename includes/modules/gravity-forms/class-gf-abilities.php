@@ -132,8 +132,9 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 						'entries'     => array(
 							'type'  => 'array',
 							'items' => array(
-								'type'       => 'object',
-								'properties' => array(
+								'type'                 => 'object',
+								'additionalProperties' => true,
+								'properties'           => array(
 									'id'           => array( 'type' => 'integer' ),
 									'date_created' => array( 'type' => 'string' ),
 									'status'       => array( 'type' => 'string' ),
@@ -149,7 +150,7 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 			),
 			'wpmcp-gf/get-entry' => array(
 				'label'         => __( 'Get Gravity Form Entry', 'wp-mcp-toolkit' ),
-				'description'   => __( 'Gets a single Gravity Form entry (submission) by ID with full details. Returns id, form_id, date_created, status, ip, source_url, user_agent, and all field values as field_{id} => value pairs. Use entry_id from list-entries. Essential for viewing complete submission data including all custom fields.', 'wp-mcp-toolkit' ),
+				'description'   => __( 'Gets a single Gravity Form entry (submission) by ID with full details. Returns id, form_id, date_created, status, and all field values as field_{id} => value pairs. PII fields (ip, source_url, user_agent) are stripped before returning. Use entry_id from list-entries. Essential for viewing complete submission data including all custom fields.', 'wp-mcp-toolkit' ),
 				'category'      => 'wpmcp-gf',
 				'input_schema'  => array(
 					'type'       => 'object',
@@ -163,8 +164,9 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 					'additionalProperties' => false,
 				),
 				'output_schema' => array(
-					'type'       => 'object',
-					'properties' => array(
+					'type'                 => 'object',
+					'additionalProperties' => true,
+					'properties'           => array(
 						'id'           => array( 'type' => 'integer' ),
 						'form_id'      => array( 'type' => 'integer' ),
 						'date_created' => array( 'type' => 'string' ),
@@ -380,9 +382,23 @@ class WP_MCP_Toolkit_GF_Abilities extends WP_MCP_Toolkit_Abstract_Abilities {
 			'form_id' => $form_id,
 		);
 
+		// Sanitize field values before passing to GFAPI, which handles its own internal validation.
+		// Strings and arrays of strings are sanitized; other scalars (int, float, bool) are safe as-is.
 		foreach ( $field_values as $field_id => $value ) {
-			$field_id           = sanitize_text_field( $field_id );
-			$entry[ $field_id ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;
+			$field_id = sanitize_text_field( $field_id );
+			if ( is_string( $value ) ) {
+				$entry[ $field_id ] = sanitize_text_field( $value );
+			} elseif ( is_array( $value ) ) {
+				$entry[ $field_id ] = array_map(
+					function ( $item ) {
+						return is_string( $item ) ? sanitize_text_field( $item ) : $item;
+					},
+					$value
+				);
+			} else {
+				// Scalar non-string (int, float, bool) — safe to pass through.
+				$entry[ $field_id ] = $value;
+			}
 		}
 
 		$entry_id = \GFAPI::add_entry( $entry );
