@@ -276,6 +276,69 @@ class WP_MCP_Toolkit_Workspace_Validator {
 		return new \WP_Error( 'wpmcp_blocked_function', "Function '{$function_name}' is blocked for security." );
 	}
 
+	// -- Code scanning --------------------------------------------------------
+
+	/**
+	 * Scan code content for blocked functions and dangerous patterns.
+	 *
+	 * @since 2.3.0
+	 * @param string $code    The code to scan.
+	 * @param string $context Context label for error messages (e.g. 'render_php', 'body').
+	 * @return true|\WP_Error True if safe, WP_Error if dangerous content detected.
+	 */
+	public static function scan_code_for_blocked_content( string $code, string $context = 'code' ): true|\WP_Error {
+		// Check against function blocklist.
+		$blocklist = self::get_blocklist();
+		foreach ( $blocklist as $fn ) {
+			// Match function calls: fn_name( or fn_name (
+			if ( preg_match( '/\b' . preg_quote( $fn, '/' ) . '\s*\(/i', $code ) ) {
+				return new \WP_Error(
+					'wpmcp_blocked_code',
+					sprintf( 'Blocked function "%s" detected in %s.', $fn, $context )
+				);
+			}
+		}
+
+		// Check for superglobals.
+		$superglobals = [ '$_GET', '$_POST', '$_REQUEST', '$_SERVER', '$_COOKIE', '$_FILES', '$_SESSION', '$GLOBALS' ];
+		foreach ( $superglobals as $sg ) {
+			if ( str_contains( $code, $sg ) ) {
+				return new \WP_Error(
+					'wpmcp_blocked_code',
+					sprintf( 'Superglobal "%s" detected in %s. Direct superglobal access is not permitted.', $sg, $context )
+				);
+			}
+		}
+
+		// Check for backtick operator.
+		if ( str_contains( $code, '`' ) ) {
+			return new \WP_Error(
+				'wpmcp_blocked_code',
+				sprintf( 'Backtick operator detected in %s. Shell execution is not permitted.', $context )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Scan CSS content for embedded PHP or script tags.
+	 *
+	 * @since 2.3.0
+	 * @param string $css The CSS to scan.
+	 * @return true|\WP_Error True if safe, WP_Error if dangerous content detected.
+	 */
+	public static function scan_css_for_blocked_content( string $css ): true|\WP_Error {
+		$php_open = '<' . '?php';
+		if ( stripos( $css, $php_open ) !== false || stripos( $css, '<script' ) !== false ) {
+			return new \WP_Error(
+				'wpmcp_blocked_code',
+				'PHP or script tags detected in CSS content.'
+			);
+		}
+		return true;
+	}
+
 	// -- Private helpers ------------------------------------------------------
 
 	/**

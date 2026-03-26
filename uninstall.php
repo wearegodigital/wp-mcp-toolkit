@@ -17,6 +17,9 @@ delete_option( 'wpmcp_disabled_addons' );
 delete_option( 'wpmcp_workspace_mode' );
 delete_option( 'wpmcp_workspace_allowlist' );
 
+// Clean up block options.
+delete_option( 'wpmcp_block_method' );
+
 // Remove MU-plugin loader (but leave workspace artifacts for safety).
 if ( defined( 'WPMU_PLUGIN_DIR' ) ) {
 	$mu_loader = WPMU_PLUGIN_DIR . '/wpmcp-workspace-loader.php';

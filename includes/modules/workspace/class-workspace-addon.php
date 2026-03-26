@@ -43,7 +43,7 @@ class WP_MCP_Toolkit_Workspace_Addon implements WP_MCP_Toolkit_Addon {
 	}
 
 	public function get_ability_count(): int {
-		return 10; // 7 workspace abilities (generate-function, generate-class, register-hook, call-wp-api, list-workspace, read-workspace-file, delete-workspace-artifact) + 3 block abilities (scaffold-block, update-block, list-workspace-blocks).
+		return 13; // 7 workspace + 3 blocks (scaffold-block, update-block, list-workspace-blocks) + insert-block + scaffold-acf-block + scaffold-block-smart.
 	}
 
 	public function register_categories(): void {
@@ -54,6 +54,10 @@ class WP_MCP_Toolkit_Workspace_Addon implements WP_MCP_Toolkit_Addon {
 		wp_register_ability_category( 'wpmcp-workspace-blocks', array(
 			'label'       => __( 'Workspace Blocks', 'wp-mcp-toolkit' ),
 			'description' => __( 'Abilities for scaffolding and managing Gutenberg blocks in the workspace.', 'wp-mcp-toolkit' ),
+		) );
+		wp_register_ability_category( 'wpmcp-workspace-acf-blocks', array(
+			'label'       => __( 'Workspace ACF Blocks', 'wp-mcp-toolkit' ),
+			'description' => __( 'Abilities for scaffolding ACF-powered blocks in the workspace.', 'wp-mcp-toolkit' ),
 		) );
 	}
 

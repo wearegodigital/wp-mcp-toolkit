@@ -68,10 +68,6 @@ class WP_MCP_Toolkit_Workspace_Bricks_Abilities extends WP_MCP_Toolkit_Abstract_
 
 	// -- Helpers --------------------------------------------------------------
 
-	private static function tpl( string $name ): string {
-		return __DIR__ . '/templates/' . $name;
-	}
-
 	private static function kebab_to_class_name( string $kebab ): string {
 		return 'WPMCP_Workspace_Bricks_' . str_replace( ' ', '_', ucwords( str_replace( '-', ' ', $kebab ) ) );
 	}
@@ -205,6 +201,20 @@ class WP_MCP_Toolkit_Workspace_Bricks_Abilities extends WP_MCP_Toolkit_Abstract_
 		$css        = $input['css'] ?? '';
 		$class_name = self::kebab_to_class_name( $element_name );
 
+		// Scan code inputs for blocked content.
+		if ( '' !== $render_php ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_code_for_blocked_content( $render_php, 'render_php' );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
+		if ( '' !== $css ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_css_for_blocked_content( $css );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
+
 		$element_php = WP_MCP_Toolkit_Workspace_Container::render_template(
 			self::tpl( 'bricks-element.php.tpl' ),
 			[
@@ -285,6 +295,20 @@ class WP_MCP_Toolkit_Workspace_Bricks_Abilities extends WP_MCP_Toolkit_Abstract_
 		$controls   = $input['controls'] ?? [];
 		$render_php = $input['render_php'] ?? '';
 		$css        = $input['css'] ?? '';
+
+		// Scan code inputs for blocked content.
+		if ( is_string( $render_php ) && '' !== $render_php ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_code_for_blocked_content( $render_php, 'render_php' );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
+		if ( is_string( $css ) && '' !== $css ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_css_for_blocked_content( $css );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
 
 		$updated_files = [];
 		$php_path      = "bricks/{$element_name}/element.php";

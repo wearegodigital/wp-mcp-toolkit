@@ -43,7 +43,7 @@ class WP_MCP_Toolkit_Bricks_Workspace_Addon implements WP_MCP_Toolkit_Addon {
 	}
 
 	public function get_ability_count(): int {
-		return 3; // scaffold-bricks-element, update-bricks-element, list-bricks-elements.
+		return 4; // scaffold-bricks-element, update-bricks-element, list-bricks-elements, insert-bricks-element.
 	}
 
 	public function register_categories(): void {
@@ -54,14 +54,10 @@ class WP_MCP_Toolkit_Bricks_Workspace_Addon implements WP_MCP_Toolkit_Addon {
 	}
 
 	public function register_abilities( array $disabled ): void {
-		// Load shared trait before ability classes that depend on it.
-		require_once __DIR__ . '/../workspace/trait-workspace-helpers.php';
-
-		// Load all workspace infrastructure (Bricks abilities share the same classes).
-		foreach ( glob( __DIR__ . '/../workspace/class-workspace-*.php' ) as $file ) {
-			require_once $file;
-		}
+		require_once __DIR__ . '/../workspace/class-workspace-module.php';
+		WP_MCP_Toolkit_Workspace_Module::load_classes();
 
 		( new WP_MCP_Toolkit_Workspace_Bricks_Abilities() )->register( $disabled );
+		( new WP_MCP_Toolkit_Workspace_Bricks_Insertion_Abilities() )->register( $disabled );
 	}
 }

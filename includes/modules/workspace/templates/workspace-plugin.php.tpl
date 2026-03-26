@@ -30,6 +30,14 @@ foreach ( glob( WPMCP_WORKSPACE_DIR . 'hooks/*.php' ) as $file ) {
 	require_once $file;
 }
 
+// Load ACF block registrations and field groups.
+foreach ( glob( WPMCP_WORKSPACE_DIR . 'blocks/*/register.php' ) as $file ) {
+	require_once $file;
+}
+foreach ( glob( WPMCP_WORKSPACE_DIR . 'blocks/*/fields.php' ) as $file ) {
+	require_once $file;
+}
+
 // Register generated Gutenberg blocks.
 add_action( 'init', function () {
 	foreach ( glob( WPMCP_WORKSPACE_DIR . 'blocks/*/block.json' ) as $block_json ) {

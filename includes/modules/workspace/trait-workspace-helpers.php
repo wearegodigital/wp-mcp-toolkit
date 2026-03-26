@@ -10,6 +10,13 @@ defined( 'ABSPATH' ) || exit;
 
 trait WP_MCP_Toolkit_Workspace_Helpers {
 
+	/**
+	 * Resolve a workspace template path by filename.
+	 */
+	protected static function tpl( string $name ): string {
+		return __DIR__ . '/templates/' . $name;
+	}
+
 	protected function ensure_workspace(): true|\WP_Error {
 		if ( WP_MCP_Toolkit_Workspace_Container::is_initialized() ) {
 			return true;

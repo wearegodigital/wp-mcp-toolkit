@@ -109,6 +109,12 @@ class WP_MCP_Toolkit_Workspace_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		$body     = $input['body'] ?? '';
 		$desc     = sanitize_text_field( $input['description'] ?? '' );
 
+		// Scan function body for blocked content.
+		$scan = WP_MCP_Toolkit_Workspace_Validator::scan_code_for_blocked_content( $body, 'function body' );
+		if ( is_wp_error( $scan ) ) {
+			return $scan;
+		}
+
 		$php = "<?php\n";
 		if ( $desc ) { $php .= "/**\n * {$desc}\n */\n"; }
 		$php .= "function {$prefixed}( {$params} ) {\n{$body}\n}";
@@ -166,6 +172,15 @@ class WP_MCP_Toolkit_Workspace_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 			$mp     = sanitize_text_field( $method['parameters'] ?? '' );
 			$mr     = isset( $method['return_type'] ) ? ': ' . sanitize_text_field( $method['return_type'] ) : '';
 			$mb     = $method['body'] ?? '';
+
+			// Scan each method body for blocked content.
+			if ( '' !== $mb ) {
+				$scan = WP_MCP_Toolkit_Workspace_Validator::scan_code_for_blocked_content( $mb, 'method body (' . $mn . ')' );
+				if ( is_wp_error( $scan ) ) {
+					return $scan;
+				}
+			}
+
 			$php   .= "\t{$vis} {$static}function {$mn}( {$mp} ){$mr} {\n{$mb}\n\t}\n\n";
 		}
 		$php .= "}\n";
@@ -203,6 +218,16 @@ class WP_MCP_Toolkit_Workspace_Abilities extends WP_MCP_Toolkit_Abstract_Abiliti
 		// Validate callback is not a blocked function.
 		if ( in_array( $callback, WP_MCP_Toolkit_Workspace_Validator::get_blocklist(), true ) ) {
 			return new \WP_Error( 'wpmcp_blocked_function', "Function '{$callback}' is blocked for security reasons." );
+		}
+
+		// Validate callback is either an existing function or a workspace artifact.
+		$workspace_name = str_replace( 'wpmcp_workspace_', '', $callback );
+		$in_manifest    = WP_MCP_Toolkit_Workspace_Manifest::get_artifact( $workspace_name ) !== null;
+		if ( ! function_exists( $callback ) && ! $in_manifest ) {
+			return new \WP_Error(
+				'wpmcp_invalid_callback',
+				"Callback '{$callback}' is neither a known function nor a workspace artifact. Generate the function first."
+			);
 		}
 
 		$php = "<?php\nadd_{$hook_type}( '{$hook_name}', '{$callback}', {$priority}, {$accepted_args} );\n";

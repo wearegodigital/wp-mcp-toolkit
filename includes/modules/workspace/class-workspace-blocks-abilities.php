@@ -71,8 +71,54 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 
 	// -- Helpers --------------------------------------------------------------
 
-	private static function tpl( string $name ): string {
-		return __DIR__ . '/templates/' . $name;
+	/**
+	 * Build InspectorControls JS fragment from block attributes schema.
+	 *
+	 * Skips array/object types (like 'items') that can't be represented with simple controls.
+	 *
+	 * @since 2.2.0
+	 * @param array $attributes Block attributes schema.
+	 * @return string JS snippet for {{INSPECTOR_CONTROLS}} placeholder.
+	 */
+	private static function build_inspector_controls_js( array $attributes ): string {
+		if ( empty( $attributes ) ) {
+			return 'null,';
+		}
+
+		$controls = [];
+		foreach ( $attributes as $name => $config ) {
+			$type    = $config['type'] ?? 'string';
+			$label   = ucwords( str_replace( [ '-', '_' ], ' ', $name ) );
+			$default = isset( $config['default'] ) ? wp_json_encode( $config['default'] ) : "''";
+
+			// Escape values before JS string interpolation.
+			$label = addslashes( $label );
+			$name  = addslashes( $name );
+
+			switch ( $type ) {
+				case 'string':
+					$controls[] = "el( components.TextControl, { label: '{$label}', value: props.attributes['{$name}'] || {$default}, onChange: function( val ) { setAttributes( { '{$name}': val } ); } } )";
+					break;
+				case 'number':
+				case 'integer':
+					$min = isset( $config['minimum'] ) ? ", min: {$config['minimum']}" : '';
+					$max = isset( $config['maximum'] ) ? ", max: {$config['maximum']}" : '';
+					$controls[] = "el( components.RangeControl, { label: '{$label}', value: props.attributes['{$name}'] || {$default}, onChange: function( val ) { setAttributes( { '{$name}': val } ); }{$min}{$max} } )";
+					break;
+				case 'boolean':
+					$controls[] = "el( components.ToggleControl, { label: '{$label}', checked: !! props.attributes['{$name}'], onChange: function( val ) { setAttributes( { '{$name}': val } ); } } )";
+					break;
+				// Skip array/object types — can't be represented with simple controls.
+			}
+		}
+
+		if ( empty( $controls ) ) {
+			return 'null,';
+		}
+
+		$controls_js = implode( ",\n\t\t\t\t\t", $controls );
+
+		return "el( InspectorControls, null,\n\t\t\t\tel( PanelBody, { title: 'Settings', initialOpen: true },\n\t\t\t\t\t{$controls_js}\n\t\t\t\t)\n\t\t\t),";
 	}
 
 	// -- Execute methods ------------------------------------------------------
@@ -109,6 +155,20 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 		$attributes  = $input['attributes'] ?? [];
 		$render_php  = $input['render_php'] ?? '';
 		$css         = $input['css'] ?? '';
+
+		// Scan code inputs for blocked content.
+		if ( '' !== $render_php ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_code_for_blocked_content( $render_php, 'render_php' );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
+		if ( '' !== $css ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_css_for_blocked_content( $css );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
 
 		// Encode attributes — use {} for empty, otherwise pretty-print.
 		$attributes_json = empty( $attributes )
@@ -171,11 +231,14 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 		// Render editor.js.
 		$editor_js = WP_MCP_Toolkit_Workspace_Container::render_template(
 			self::tpl( 'block-editor.js.tpl' ),
-			[ 'BLOCK_NAME' => $block_name ]
+			[
+				'BLOCK_NAME'         => $block_name,
+				'INSPECTOR_CONTROLS' => self::build_inspector_controls_js( $attributes ),
+			]
 		);
 
 		// editor.asset.php — declares wp-blocks, wp-element, etc. for enqueueing.
-		$asset_php  = $php_open . " return ['dependencies' => ['wp-blocks', 'wp-element', 'wp-server-side-render', 'wp-block-editor'], 'version' => '1.0.0'];";
+		$asset_php  = $php_open . " return ['dependencies' => ['wp-blocks', 'wp-element', 'wp-server-side-render', 'wp-block-editor', 'wp-components'], 'version' => '1.0.0'];";
 
 		// Write all 5 files.
 		$json_path   = "blocks/{$block_name}/block.json";
@@ -239,6 +302,20 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 		}
 
 		$updated_files = [];
+
+		// Scan code inputs for blocked content.
+		if ( ! empty( $input['render_php'] ) ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_code_for_blocked_content( $input['render_php'], 'render_php' );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
+		if ( ! empty( $input['css'] ) ) {
+			$scan = WP_MCP_Toolkit_Workspace_Validator::scan_css_for_blocked_content( $input['css'] );
+			if ( is_wp_error( $scan ) ) {
+				return $scan;
+			}
+		}
 
 		// Update render.php if provided.
 		if ( ! empty( $input['render_php'] ) ) {

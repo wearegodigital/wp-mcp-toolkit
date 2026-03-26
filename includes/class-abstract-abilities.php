@@ -74,10 +74,16 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 		'wpmcp-workspace/scaffold-block'             => 'Scaffold Block',
 		'wpmcp-workspace/update-block'               => 'Update Block',
 		'wpmcp-workspace/list-workspace-blocks'      => 'List Workspace Blocks',
+		// Workspace — ACF Blocks.
+		'wpmcp-workspace/scaffold-acf-block'         => 'Scaffold ACF Block',
+		// Workspace — Smart + Insertion.
+		'wpmcp-workspace/scaffold-block-smart'       => 'Smart Block Scaffold',
+		'wpmcp-workspace/insert-block'               => 'Insert Block',
 		// Bricks Workspace.
 		'wpmcp-bricks/scaffold-bricks-element'       => 'Scaffold Bricks Element',
 		'wpmcp-bricks/update-bricks-element'         => 'Update Bricks Element',
 		'wpmcp-bricks/list-bricks-elements'          => 'List Bricks Elements',
+		'wpmcp-bricks/insert-bricks-element'         => 'Insert Bricks Element',
 	);
 
 	/**
@@ -209,6 +215,32 @@ abstract class WP_MCP_Toolkit_Abstract_Abilities {
 			$pt_obj    = get_post_type_object( $post_type );
 			return $pt_obj && current_user_can( $pt_obj->cap->publish_posts );
 		};
+	}
+
+	/**
+	 * Recursively sanitize an array of values for safe storage.
+	 *
+	 * @since 2.3.0
+	 * @param array $data The data to sanitize.
+	 * @return array Sanitized data.
+	 */
+	protected static function sanitize_recursive( array $data ): array {
+		$sanitized = [];
+		foreach ( $data as $key => $value ) {
+			$key = sanitize_text_field( (string) $key );
+			if ( is_array( $value ) ) {
+				$sanitized[ $key ] = self::sanitize_recursive( $value );
+			} elseif ( is_string( $value ) ) {
+				$sanitized[ $key ] = wp_kses_post( $value );
+			} elseif ( is_int( $value ) || is_float( $value ) ) {
+				$sanitized[ $key ] = $value;
+			} elseif ( is_bool( $value ) ) {
+				$sanitized[ $key ] = $value;
+			} else {
+				$sanitized[ $key ] = sanitize_text_field( (string) $value );
+			}
+		}
+		return $sanitized;
 	}
 
 	/**

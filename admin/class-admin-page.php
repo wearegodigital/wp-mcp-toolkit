@@ -110,6 +110,11 @@ class WP_MCP_Toolkit_Admin_Page {
 			'sanitize_callback' => array( $this, 'sanitize_workspace_allowlist_setting' ),
 			'default'           => array(),
 		) );
+
+		register_setting( 'wpmcp_settings', 'wpmcp_block_method', array(
+			'default'           => 'recommended',
+			'sanitize_callback' => array( $this, 'sanitize_block_method_setting' ),
+		) );
 	}
 
 	public function sanitize_abilities_setting( $value ): array {
@@ -274,6 +279,11 @@ class WP_MCP_Toolkit_Admin_Page {
 		$valid = array( 'auto', 'staging', 'production', 'disabled' );
 		$value = sanitize_key( (string) $value );
 		return in_array( $value, $valid, true ) ? $value : 'auto';
+	}
+
+	public function sanitize_block_method_setting( $value ): string {
+		$valid = array( 'recommended', 'vanilla', 'acf', 'agent-decides' );
+		return in_array( $value, $valid, true ) ? $value : 'recommended';
 	}
 
 	public function sanitize_workspace_allowlist_setting( $value ): array {
