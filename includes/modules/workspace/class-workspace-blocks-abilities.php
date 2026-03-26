@@ -182,8 +182,9 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 			$render_php = '<div ' . $php_open . ' echo get_block_wrapper_attributes(); ' . $php_close . ">\n\t<p>" . $php_open . ' echo esc_html( $attributes[\'content\'] ?? \'\' ); ' . $php_close . "</p>\n</div>";
 		}
 
-		// If render_php is pure PHP (no HTML tags), wrap in php tags and block wrapper.
-		if ( false === strpos( $render_php, '<' ) ) {
+		// Detect pure PHP: starts with $, echo, if, foreach, for, while, switch, //, or return.
+		$is_pure_php = (bool) preg_match( '/^\s*(\$|echo\b|if\b|foreach\b|for\b|while\b|switch\b|return\b|\/\/)/', $render_php );
+		if ( $is_pure_php ) {
 			$render_php = $php_open . "\n" . $render_php . "\n" . $php_close;
 		}
 
@@ -324,8 +325,9 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 			$php_open    = '<' . '?php';
 			$php_close   = '?' . '>';
 
-			// If render_php is pure PHP (no HTML tags), wrap in php tags.
-			if ( false === strpos( $render_php, '<' ) ) {
+			// Detect pure PHP: starts with $, echo, if, foreach, etc.
+			$is_pure_php = (bool) preg_match( '/^\s*(\$|echo\b|if\b|foreach\b|for\b|while\b|switch\b|return\b|\/\/)/', $render_php );
+			if ( $is_pure_php ) {
 				$render_php = $php_open . "\n" . $render_php . "\n" . $php_close;
 			}
 
