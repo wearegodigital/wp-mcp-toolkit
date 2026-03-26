@@ -10,6 +10,7 @@
 	"textdomain": "wpmcp-workspace",
 	"attributes": {{BLOCK_ATTRIBUTES}},
 	"supports": { "html": false },
+	"editorScript": "file:./editor.js",
 	"render": "file:./render.php",
 	"style": "file:./style.css"
 }

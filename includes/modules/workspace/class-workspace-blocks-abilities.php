@@ -168,10 +168,21 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 			]
 		);
 
-		// Write all 3 files.
+		// Render editor.js.
+		$editor_js = WP_MCP_Toolkit_Workspace_Container::render_template(
+			self::tpl( 'block-editor.js.tpl' ),
+			[ 'BLOCK_NAME' => $block_name ]
+		);
+
+		// editor.asset.php — declares wp-blocks, wp-element, etc. for enqueueing.
+		$asset_php  = $php_open . " return ['dependencies' => ['wp-blocks', 'wp-element', 'wp-server-side-render', 'wp-block-editor'], 'version' => '1.0.0'];";
+
+		// Write all 5 files.
 		$json_path   = "blocks/{$block_name}/block.json";
 		$render_path = "blocks/{$block_name}/render.php";
 		$style_path  = "blocks/{$block_name}/style.css";
+		$editor_path = "blocks/{$block_name}/editor.js";
+		$asset_path  = "blocks/{$block_name}/editor.asset.php";
 
 		$written = WP_MCP_Toolkit_Workspace_File_Writer::write_file( $json_path, $block_json );
 		if ( is_wp_error( $written ) ) {
@@ -188,6 +199,16 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 			return $written;
 		}
 
+		$written = WP_MCP_Toolkit_Workspace_File_Writer::write_file( $editor_path, $editor_js );
+		if ( is_wp_error( $written ) ) {
+			return $written;
+		}
+
+		$written = WP_MCP_Toolkit_Workspace_File_Writer::write_file( $asset_path, $asset_php );
+		if ( is_wp_error( $written ) ) {
+			return $written;
+		}
+
 		// Register in manifest.
 		$saved = $this->save_artifact( $block_name, 'block', $json_path, 'wpmcp-workspace/scaffold-block' );
 		if ( is_wp_error( $saved ) ) {
@@ -196,7 +217,7 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 
 		return [
 			'block_name'   => $block_name,
-			'files'        => [ $json_path, $render_path, $style_path ],
+			'files'        => [ $json_path, $render_path, $style_path, $editor_path, $asset_path ],
 			'registration' => "wpmcp-workspace/{$block_name}",
 		];
 	}

@@ -109,6 +109,46 @@ class WP_MCP_Toolkit_Workspace_Bricks_Abilities extends WP_MCP_Toolkit_Abstract_
 				$parts[] = "'options' => [ " . implode( ', ', $opts ) . ' ]';
 			}
 
+			// Repeater: build nested 'fields' array.
+			if ( 'repeater' === $type && ! empty( $control['fields'] ) && is_array( $control['fields'] ) ) {
+				$field_lines = [];
+				foreach ( $control['fields'] as $field ) {
+					$field       = (array) $field;
+					$fname       = sanitize_key( $field['name'] ?? '' );
+					$ftype       = sanitize_text_field( $field['type'] ?? 'text' );
+					$flabel      = sanitize_text_field( $field['label'] ?? ucwords( str_replace( '-', ' ', $fname ) ) );
+
+					if ( '' === $fname ) {
+						continue;
+					}
+
+					$fparts = [
+						"'type' => " . var_export( $ftype, true ),
+						"'label' => " . var_export( $flabel, true ),
+					];
+
+					if ( array_key_exists( 'default', $field ) ) {
+						$fparts[] = "'default' => " . var_export( $field['default'], true );
+					}
+
+					$field_lines[] = "\t\t\t\t" . var_export( $fname, true ) . ' => [ ' . implode( ', ', $fparts ) . ' ],';
+				}
+				$parts[] = "'fields' => [\n" . implode( "\n", $field_lines ) . "\n\t\t\t]";
+			}
+
+			// Scalar extras: min, max, placeholder, units.
+			foreach ( [ 'min', 'max' ] as $key ) {
+				if ( array_key_exists( $key, $control ) && is_numeric( $control[ $key ] ) ) {
+					$parts[] = var_export( $key, true ) . ' => ' . var_export( (float) $control[ $key ], true );
+				}
+			}
+
+			foreach ( [ 'placeholder', 'units' ] as $key ) {
+				if ( ! empty( $control[ $key ] ) && is_string( $control[ $key ] ) ) {
+					$parts[] = var_export( $key, true ) . ' => ' . var_export( sanitize_text_field( $control[ $key ] ), true );
+				}
+			}
+
 			$lines[] = "\t\t\$this->controls[" . var_export( $name, true ) . '] = [ ' . implode( ', ', $parts ) . ' ];';
 		}
 
