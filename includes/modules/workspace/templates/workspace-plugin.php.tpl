@@ -44,7 +44,11 @@ add_action( 'after_setup_theme', function () {
 	}
 	add_action( 'init', function () {
 		foreach ( glob( WPMCP_WORKSPACE_DIR . 'bricks/*/element.php' ) as $element_file ) {
-			\Bricks\Elements::register_element( $element_file );
+			try {
+				\Bricks\Elements::register_element( $element_file );
+			} catch ( \Error $e ) {
+				// Bricks internal error (e.g. WooCommerce element incompatibility) — skip gracefully.
+			}
 		}
-	}, 9 );
+	}, 11 );
 }, 20 );
