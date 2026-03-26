@@ -40,7 +40,7 @@ class WP_MCP_Toolkit_Workspace_Validator {
 		}
 
 		$filename = basename( $path );
-		if ( ! preg_match( '/^[a-zA-Z0-9_-]+\.(php|css|json|js|txt|tpl)$/', $filename ) ) {
+		if ( ! preg_match( '/^[a-zA-Z0-9._-]+\.(php|css|json|js|txt|tpl)$/', $filename ) ) {
 			return new \WP_Error( 'wpmcp_invalid_filename', 'Invalid filename: ' . $filename );
 		}
 
