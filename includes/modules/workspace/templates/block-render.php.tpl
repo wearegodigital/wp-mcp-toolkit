@@ -7,6 +7,4 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<div <?php echo get_block_wrapper_attributes(); ?>>
-	{{RENDER_BODY}}
-</div>
+{{RENDER_BODY}}

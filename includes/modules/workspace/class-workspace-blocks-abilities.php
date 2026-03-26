@@ -116,8 +116,20 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 			: wp_json_encode( $attributes, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 
 		// Default render body.
+		$php_open  = '<' . '?php';
+		$php_close = '?' . '>';
 		if ( '' === $render_php ) {
-			$render_php = "<p><?php echo esc_html( \$attributes['content'] ?? '' ); ?></p>";
+			$render_php = '<div ' . $php_open . ' echo get_block_wrapper_attributes(); ' . $php_close . ">\n\t<p>" . $php_open . ' echo esc_html( $attributes[\'content\'] ?? \'\' ); ' . $php_close . "</p>\n</div>";
+		}
+
+		// If render_php is pure PHP (no HTML tags), wrap in php tags and block wrapper.
+		if ( false === strpos( $render_php, '<' ) ) {
+			$render_php = $php_open . "\n" . $render_php . "\n" . $php_close;
+		}
+
+		// Ensure block wrapper is present.
+		if ( false === strpos( $render_php, 'get_block_wrapper_attributes' ) ) {
+			$render_php = '<div ' . $php_open . ' echo get_block_wrapper_attributes(); ' . $php_close . ">\n\t" . $render_php . "\n</div>";
 		}
 
 		// Default CSS.
@@ -209,12 +221,26 @@ class WP_MCP_Toolkit_Workspace_Blocks_Abilities extends WP_MCP_Toolkit_Abstract_
 
 		// Update render.php if provided.
 		if ( ! empty( $input['render_php'] ) ) {
+			$render_php  = $input['render_php'];
 			$render_path = "blocks/{$block_name}/render.php";
+			$php_open    = '<' . '?php';
+			$php_close   = '?' . '>';
+
+			// If render_php is pure PHP (no HTML tags), wrap in php tags.
+			if ( false === strpos( $render_php, '<' ) ) {
+				$render_php = $php_open . "\n" . $render_php . "\n" . $php_close;
+			}
+
+			// Ensure block wrapper is present.
+			if ( false === strpos( $render_php, 'get_block_wrapper_attributes' ) ) {
+				$render_php = '<div ' . $php_open . ' echo get_block_wrapper_attributes(); ' . $php_close . ">\n\t" . $render_php . "\n</div>";
+			}
+
 			$render_content = WP_MCP_Toolkit_Workspace_Container::render_template(
 				self::tpl( 'block-render.php.tpl' ),
 				[
 					'BLOCK_NAME'  => $block_name,
-					'RENDER_BODY' => $input['render_php'],
+					'RENDER_BODY' => $render_php,
 				]
 			);
 			$written = WP_MCP_Toolkit_Workspace_File_Writer::write_file( $render_path, $render_content );
