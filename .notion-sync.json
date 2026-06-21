@@ -7,6 +7,6 @@
   "repoUrl": "https://github.com/wearegodigital/wp-mcp-toolkit",
   "targetBranch": "main",
   "taskNameConvention": "(X Hrs) Task Title",
-  "lastSyncedCommit": "3190f2ca16acdca182292502b719403138d8b228",
+  "lastSyncedCommit": "ff6c3bee5c7ff80b249a6dd337172ca1909be571",
   "_note": "IDs only, no secrets. Notion auth + wheelhouse config live in ~/.wheelhouse-local/config.json and macOS Keychain. See the 'Notion Sync' section in CLAUDE.md."
 }
