@@ -1,0 +1,12 @@
+{
+  "projectName": "WordPress MCP Toolkit (go.digital)",
+  "projectPageId": "c47c764e4a704525963d284ffc8b3f9c",
+  "projectUrl": "https://www.notion.so/WordPress-MCP-Toolkit-go-digital-c47c764e4a704525963d284ffc8b3f9c",
+  "projectsDataSourceId": "4e56b1dd-7bc9-496c-8a4f-3d80f3d1c867",
+  "tasksDataSourceId": "9a39a8c7-80ed-49db-8fc3-22f5a1ee25d9",
+  "repoUrl": "https://github.com/wearegodigital/wp-mcp-toolkit",
+  "targetBranch": "main",
+  "taskNameConvention": "(X Hrs) Task Title",
+  "lastSyncedCommit": "3190f2ca16acdca182292502b719403138d8b228",
+  "_note": "IDs only, no secrets. Notion auth + wheelhouse config live in ~/.wheelhouse-local/config.json and macOS Keychain. See the 'Notion Sync' section in CLAUDE.md."
+}

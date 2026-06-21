@@ -12,6 +12,7 @@
 .phpcs.xml
 .phpcs.xml.dist
 CLAUDE.md
+.notion-sync.json
 CONTRIBUTING.md
 Makefile
 README.md

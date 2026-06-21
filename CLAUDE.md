@@ -141,6 +141,48 @@ If a task fails, log with `--status failed` and `--retry-context "what went wron
 
 - Workspace module: `docs/plans/workspace-module.md`
 - Dev process: `docs/plans/dev-process.md`
+- Notion project (live roadmap mirror): see `.notion-sync.json` and the Notion Sync section below
+
+## Notion Sync
+
+This project mirrors its roadmap and status to a Notion **Project** page and **Tasks** database. The repo is canonical; Notion is the mirror. If they disagree on scope/roadmap, the repo wins and Notion is re-synced. Status and human feedback that originate in Notion are the exception — pull them in at session start.
+
+### Canonical IDs
+
+Non-secret IDs live in `.notion-sync.json` at the repo root (committed — IDs only, never tokens). Notion auth and wheelhouse config stay out of the repo (`~/.wheelhouse-local/config.json`, macOS Keychain, env). Read IDs from that file; never hardcode them or match Notion pages by title.
+
+### Session startup (pull Notion → local)
+
+At the start of any planning, build, or wheelhouse session, before doing work:
+
+1. Read `.notion-sync.json` for `projectPageId` and `tasksDataSourceId`.
+2. `notion-fetch` the project page — read Overview, Notes, Status.
+3. `notion-query-data-sources` on the Tasks data source for this Project where Status ∈ {To Do, Ready, In Progress} — those are the active tasks.
+4. If Notion contradicts `docs/plans/` or `docs/phases/`, treat the repo as canonical and run the Plan-change mirror.
+
+Skip the pull only for trivial one-file edits unrelated to the roadmap.
+
+### Plan-change mirror (push local → Notion)
+
+Whenever the roadmap changes — edit `docs/plans/*.md`, add a `docs/phases/*.md`, finish a phase, or change the Release Checklist — mirror it in the same session:
+
+1. `notion-fetch` the project page (get current), then `notion-update-page` to refresh Overview / Key Files / Notes and set Status (`In Progress` while building, `Complete` at release).
+2. For each new actionable item, create/update a Tasks-DB row (`notion-create-pages` / `notion-update-page`): Name `(X Hrs) Title`, Project relation = this project, `Repo URL` + `Target Branch` from `.notion-sync.json`. Mark a task `Completed` when its phase summary lands in `docs/phases/`.
+3. Bump `lastSyncedCommit` in `.notion-sync.json` to HEAD and commit it with the plan change.
+
+### Wheelhouse handoff (delegating a task to run autonomously)
+
+The wheelhouse automation reads these Task fields — get them right or the task silently won't run:
+
+- **Delegation Status** = `local` or `both` (the live trigger; `web` / `not delegated` are ignored).
+- **Repo URL** set, or no job is ever created.
+- **Status** ∈ {To Do, Ready, Backlog, Awaiting Feedback, Awaiting Info} (not In Progress / To Review / On Hold / Completed / Cancelled).
+- **Due Date** ≤ today, or `/wh:work` never auto-claims it (run on demand with `/wh:run <pageId>`).
+- **Auto-plan** checked = hands-off; unchecked = posts a plan to the page and waits for approval.
+- Everything else (Estimated Time, Task Type, Engagement Tier, Granularity, Sprint/Project relations) is organizational — the wheelhouse ignores it for control.
+- The runner clones into an isolated worktree and **cannot use DevKinsta/WP-CLI** — write acceptance criteria as static checks (`php -l`, `grep`, file contents), not live ability-count runs.
+
+Task page bodies should follow: Objective / Context / Scope (in + out) / Action Points (atomic checklist) / Acceptance Criteria (binary, statically checkable) / Constraints / Verification. The planner also reads this CLAUDE.md, so convention detail can be deferred to "follow CLAUDE.md".
 
 ## Release Checklist
 
